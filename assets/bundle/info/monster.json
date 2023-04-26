@@ -1,0 +1,17 @@
+{
+  "name": "怪物001",
+  "hp": 100,
+  "mp": 100,
+  "strength": 10,
+  "dexterity": 10,
+  "intelligence": 10,
+  "stamina": 10,
+  "mana": 10,
+  "attack": 10,
+  "defense": 10,
+  "magicAttack": 10,
+  "magicDefense": 10,
+  "accuracy": 10,
+  "evasion": 10,
+  "speed": 10
+}
