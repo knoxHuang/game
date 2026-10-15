@@ -1,0 +1,24 @@
+{
+  "name": "fog-harbor-investigator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "content:check": "node scripts/content-check.ts",
+    "content:ready": "node scripts/content-check.ts --ready",
+    "predev": "npm run content:check",
+    "prebuild": "npm run content:check",
+    "test": "npm run content:check && node --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "phaser": "3.90.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "^7.0.0"
+  }
+}

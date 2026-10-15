@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 3,
+  "style": "fog-harbor-pixel-v1",
+  "id": "many_eyed_priest",
+  "status": "prototype",
+  "name": "万眼主祭",
+  "zone": "沉没修道院",
+  "description": "多重法术落点与环形脉冲；眼部开启时攻击。",
+  "danger": 2,
+  "recommendedHealth": 120,
+  "recommendedDps": 26,
+  "unlockShop": 2,
+  "map": {
+    "x": 24,
+    "y": 47,
+    "order": 2
+  },
+  "lore": {
+    "kind": "original",
+    "entity": "万眼主祭",
+    "sources": [],
+    "interpretation": "现有游戏原创原型；眷属编队与攻击行为为玩法改编，尚未完成造型和关系审核。",
+    "reviewed": false
+  },
+  "art": {
+    "portrait": "/assets/bosses/many-eyed-priest.png",
+    "card": null,
+    "brief": "沿用已确认的精细像素海港画风；当前使用历史画像和共用战斗资产，独立小头像、绘图卡、专用动作图集与主题场景待补齐。",
+    "reviewed": false
+  },
+  "biome": {
+    "floor": [
+      "#77718f",
+      "#686583"
+    ],
+    "wall": "#827d99",
+    "wash": "#251d36",
+    "floorArt": {
+      "type": "builtin",
+      "key": "sea-floor"
+    },
+    "wallArt": {
+      "type": "builtin",
+      "key": "sea-wall"
+    },
+    "obstacleArt": {
+      "type": "builtin",
+      "key": "rock"
+    }
+  },
+  "boss": {
+    "hp": 320,
+    "radius": 1.12,
+    "size": 4.3,
+    "tint": "#b8a1d8",
+    "phaseAt": 0.5,
+    "armor": 0.22,
+    "windup": [
+      1.1,
+      0.78
+    ],
+    "recover": [
+      1.45,
+      1.05
+    ],
+    "attacks": [
+      {
+        "type": "ground",
+        "offsets": [
+          -2.4,
+          -1.2,
+          0,
+          1.2,
+          2.4
+        ],
+        "phaseTwoOffsets": [
+          -2.4,
+          -1.2,
+          0,
+          1.2,
+          2.4
+        ],
+        "centerShift": 0,
+        "damage": 16,
+        "radius": 0.7,
+        "magic": true
+      },
+      {
+        "type": "fan",
+        "offsets": [
+          -0.6,
+          -0.3,
+          0,
+          0.3,
+          0.6
+        ],
+        "phaseTwoOffsets": [
+          -0.6,
+          -0.3,
+          0,
+          0.3,
+          0.6
+        ],
+        "damage": 14,
+        "speed": 3.6
+      }
+    ],
+    "rewards": {
+      "crystal": 3,
+      "iron": 3
+    },
+    "sprite": {
+      "type": "builtin",
+      "key": "boss-many_eyed_priest"
+    }
+  },
+  "minions": {
+    "beast": {
+      "name": "潮蛰兽",
+      "relationship": "项目原创通用遭遇生物；与该 Boss 的从属关系属于游戏改编，待审核。",
+      "hp": 28,
+      "radius": 0.34,
+      "size": 1.2,
+      "speed": 2,
+      "range": 1.35,
+      "keepAway": 0,
+      "windup": 0.68,
+      "recover": 0.72,
+      "damage": 10,
+      "projectileSpeed": 3.6,
+      "drop": "crystal",
+      "evidenceQuest": "K0",
+      "clearQuest": "Q12",
+      "sprite": {
+        "type": "builtin",
+        "key": "beast"
+      }
+    },
+    "bug": {
+      "name": "附蛰虫",
+      "relationship": "项目原创通用遭遇生物；与该 Boss 的从属关系属于游戏改编，待审核。",
+      "hp": 30,
+      "radius": 0.3,
+      "size": 1.2,
+      "speed": 1.5,
+      "range": 5.5,
+      "keepAway": 2.7,
+      "windup": 0.82,
+      "recover": 0.72,
+      "damage": 10,
+      "projectileSpeed": 3.6,
+      "drop": "iron",
+      "evidenceQuest": "Q11",
+      "clearQuest": null,
+      "sprite": {
+        "type": "builtin",
+        "key": "bug"
+      }
+    },
+    "cultist": {
+      "name": "溺亡秘仪师",
+      "relationship": "项目原创通用遭遇生物；与该 Boss 的从属关系属于游戏改编，待审核。",
+      "hp": 38,
+      "radius": 0.32,
+      "size": 1.2,
+      "speed": 1.5,
+      "range": 6,
+      "keepAway": 3.2,
+      "windup": 0.95,
+      "recover": 0.72,
+      "damage": 14,
+      "projectileSpeed": 3.6,
+      "drop": "crystal",
+      "evidenceQuest": "Q13",
+      "clearQuest": null,
+      "sprite": {
+        "type": "builtin",
+        "key": "cultist"
+      }
+    }
+  },
+  "effects": {
+    "projectile": null,
+    "ground": null
+  },
+  "combat": {
+    "warning": 0.8,
+    "safeDistance": 3,
+    "waves": [
+      {
+        "at": 5,
+        "enemies": {
+          "beast": 16,
+          "bug": 0,
+          "cultist": 0,
+          "guardian": 0
+        },
+        "batches": 4,
+        "batchInterval": 6
+      },
+      {
+        "at": 30,
+        "enemies": {
+          "beast": 18,
+          "bug": 4,
+          "cultist": 2,
+          "guardian": 0
+        },
+        "batches": 4,
+        "batchInterval": 6
+      },
+      {
+        "at": 55,
+        "enemies": {
+          "beast": 22,
+          "bug": 6,
+          "cultist": 4,
+          "guardian": 0
+        },
+        "batches": 5,
+        "batchInterval": 5
+      },
+      {
+        "at": 80,
+        "enemies": {
+          "beast": 26,
+          "bug": 8,
+          "cultist": 6,
+          "guardian": 0
+        },
+        "batches": 5,
+        "batchInterval": 5
+      },
+      {
+        "at": 105,
+        "enemies": {
+          "beast": 0,
+          "bug": 0,
+          "cultist": 0,
+          "guardian": 1
+        },
+        "batches": 1,
+        "batchInterval": 0
+      }
+    ]
+  },
+  "arena": {
+    "name": "祭仪广场",
+    "width": 20,
+    "height": 24,
+    "entry": {
+      "x": 10,
+      "y": 14
+    },
+    "background": null,
+    "obstacles": [
+      {
+        "x": 6,
+        "y": 7
+      },
+      {
+        "x": 14,
+        "y": 7
+      },
+      {
+        "x": 6,
+        "y": 17
+      },
+      {
+        "x": 14,
+        "y": 17
+      },
+      {
+        "x": 9,
+        "y": 11
+      }
+    ],
+    "hazards": [],
+    "objects": [
+      {
+        "id": "extraction",
+        "kind": "exit",
+        "at": {
+          "x": 10,
+          "y": 20
+        },
+        "material": null,
+        "amount": 0
+      },
+      {
+        "id": "sample-cache",
+        "kind": "chest",
+        "at": {
+          "x": 4,
+          "y": 12
+        },
+        "material": "crystal",
+        "amount": 2
+      },
+      {
+        "id": "parts-cache",
+        "kind": "chest",
+        "at": {
+          "x": 16,
+          "y": 12
+        },
+        "material": "iron",
+        "amount": 2
+      }
+    ]
+  }
+}

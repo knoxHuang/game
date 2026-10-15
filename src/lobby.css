@@ -1,0 +1,88 @@
+/* Layered game lobby: percentages follow the approved cutaway artwork. */
+#screen[data-lobby="true"] { inset: var(--top-safe) 0 var(--bottom-safe); pointer-events: auto; }
+.lobby-scene { position: absolute; inset: 0; overflow: clip; isolation: isolate; background: #09151c; }
+.lobby-scene::before { content: ""; position: absolute; inset: -30px; background: url('/assets/lobby/cutaway-harbor.png') center/cover; filter: blur(18px) brightness(.38); }
+.lobby-stage { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); container-type: inline-size; }
+.lobby-background { display: block; width: 100%; height: 100%; pointer-events: none; }
+.lobby-hud { position: absolute; z-index: 5; top: 8px; right: 8px; left: 8px; display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; pointer-events: none; }
+.lobby-title { display: grid; grid-template-columns: auto auto; gap: 0 8px; padding: 5px 11px 7px; border: 1px solid #957343; outline: 2px solid #1d211e; background: linear-gradient(140deg,#16232bee,#101619f5); box-shadow: inset 0 0 0 2px #302b20,0 4px 12px #0009; color: #ead5a0; }
+.lobby-title small { grid-column: 1; font-size: 12px; letter-spacing: .25em; }
+.lobby-title strong { grid-column: 1; font: 600 21px/1.15 'Songti SC',serif; letter-spacing: .05em; }
+.lobby-title b { grid-column: 2; grid-row: 1/3; align-self: center; color: #c0a16b; font: 20px Georgia,serif; }
+.lobby-resources { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; max-width: 61%; }
+.lobby-resources > span { display: flex; align-items: center; gap: 4px; padding: 5px 7px; color: #e6c681; background: #0a1824e8; border-bottom: 1px solid #927240; font-size: 15px; }
+.lobby-resources b { color: #f1e7c7; font: 500 14px Georgia,serif; }
+.lobby-weather { position: absolute; z-index: 1; inset: 0; overflow: hidden; pointer-events: none; mask-image: linear-gradient(to bottom,#000 0% 15%,transparent 31% 75%,#000 83%),linear-gradient(to left,#000,transparent 22%); }
+.lobby-rain { position: absolute; inset: -30%; background: repeating-linear-gradient(105deg,transparent 0 19px,#b9dfe06b 20px,transparent 21px 41px); opacity: .2; animation: lobby-rain .85s linear infinite; }
+.lobby-fog { position: absolute; left: -20%; bottom: 9%; width: 140%; height: 23%; opacity: .14; background: radial-gradient(ellipse at 35% 60%,#98d0d0a1,transparent 60%); animation: lobby-fog 13s ease-in-out infinite alternate; }
+.lobby-sea { position: absolute; z-index: 1; top: 77%; right: 0; bottom: 4%; left: 0; background: repeating-linear-gradient(177deg,transparent 0 21px,#80d4db13 23px,transparent 25px 41px); animation: lobby-tide 6s ease-in-out infinite alternate; pointer-events: none; }
+.lobby-lamp { position: absolute; z-index: 2; width: 24%; aspect-ratio: 1; transform: translate(-50%,-50%); background: radial-gradient(circle,#ffc15740 0%,#ed9b3b21 22%,transparent 68%); mix-blend-mode: screen; pointer-events: none; animation: lobby-light 3.7s ease-in-out infinite; animation-delay: var(--delay); }
+.lobby-lamp > i { display: block; position: absolute; top: 47%; left: 48%; width: 4%; height: 11%; border-radius: 60% 40% 50% 50%; background: #ffdf8d85; filter: blur(.5px); transform-origin: 50% 100%; animation: lobby-flame 1.5s ease-in-out infinite alternate; animation-delay: var(--delay); }
+.lobby-hero { position: absolute; z-index: 2; left: 45%; bottom: 48.5%; width: 7.6%; aspect-ratio: 596/1356; overflow: hidden; transform: translateX(-50%); transform-origin: 50% 100%; animation: lobby-idle 4s ease-in-out infinite; pointer-events: none; }
+.lobby-hero img { position: absolute; width: 171.81%; max-width: none; left: -32.72%; top: -8.55%; image-rendering: auto; }
+.lobby-hero-shadow { position: absolute; left: 45%; top: 51.1%; z-index: 1; width: 11%; height: .9%; border-radius: 50%; transform: translateX(-50%); background: #0d1218b5; filter: blur(2px); }
+.lobby-dust { position: absolute; z-index: 2; inset: 30% 0 22%; overflow: hidden; pointer-events: none; }
+.lobby-dust i { position: absolute; bottom: -8px; width: 2px; height: 2px; border-radius: 50%; background: #f2d59d; animation: lobby-dust 11s linear infinite; animation-delay: var(--delay); }
+.lobby-hotspot { position: absolute; z-index: 3; padding: 0; min-width: 48px; min-height: 48px; border: 0; background: transparent; color: #f5dea4; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.lobby-hotspot::before { content: ""; position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at 50% 55%,#ffcf703d,transparent 68%); transition: opacity .18s ease; pointer-events: none; }
+.lobby-plaque { position: absolute; top: var(--plaque-top); left: var(--plaque-left); transform: translate(-50%,-50%); white-space: nowrap; font: 600 clamp(14px,4.2cqw,21px)/1.2 'Songti SC',serif; letter-spacing: .13em; text-indent: .13em; text-shadow: 0 2px 2px #000,0 0 5px #000; transition: color .18s ease,filter .18s ease,transform .12s ease; }
+/* Keyboard focus stays on the physical sign instead of outlining the room. */
+.lobby-hotspot:focus-visible { outline: none; }
+.lobby-hotspot:focus-visible .lobby-plaque { color: #fff0b7; filter: drop-shadow(0 0 7px #f5bc5b); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+/* Sign centers in the 941×1672 artwork: (207,575), (646,577),
+   (213,952), (661,963). */
+.spot-quests { left: 4%; top: 30%; width: 34%; height: 22%; --plaque-left: 52.94%; --plaque-top: 19.95%; }
+.spot-archives { left: 58%; top: 30%; width: 28%; height: 23%; --plaque-left: 38.04%; --plaque-top: 19.61%; }
+.spot-gear { left: 2%; top: 53%; width: 36%; height: 22%; --plaque-left: 57.32%; --plaque-top: 17.90%; }
+.spot-upgrade { left: 56%; top: 53%; width: 29%; height: 10%; --plaque-left: 49.14%; --plaque-top: 45.96%; }
+.lobby-hotspot.is-lit::before,
+.lobby-scene[data-focus="quests"] .spot-quests::before,
+.lobby-scene[data-focus="archives"] .spot-archives::before,
+.lobby-scene[data-focus="gear"] .spot-gear::before,
+.lobby-scene[data-focus="upgrade"] .spot-upgrade::before { opacity: 1; }
+.lobby-hotspot.is-lit .lobby-plaque { color: #fff0b7; filter: drop-shadow(0 0 7px #f5bc5b); }
+.lobby-hotspot:active .lobby-plaque { transform: translate(-50%,-50%) scale(.94); }
+.lobby-marker { position: absolute; top: 44%; left: 61%; display: grid; width: 22px; height: 26px; place-items: center; border: 1px solid #e6be67; border-radius: 45%; background: #2c2316ed; color: #ffe497; box-shadow: 0 0 12px #f9c45b60; font-weight: 700; animation: lobby-marker 2.7s ease-in-out infinite; pointer-events: none; }
+.spot-upgrade .lobby-marker { top: 121%; left: 50%; font: 13px Georgia,serif; }
+.lobby-keeper { position: absolute; z-index: 4; top: 24%; left: 34%; padding: 5px 7px; border: 1px solid #a5864a; background: #101d24dd; color: #ead5a6; font-size: 12px; }
+.lobby-keeper span { color: #eacb82; }
+.lobby-footer { position: absolute; z-index: 5; right: 3%; bottom: 2.5%; left: 3%; height: 26%; pointer-events: none; }
+.lobby-game-tools { position: absolute; right: calc(clamp(84px,32%,144px) + 2px); bottom: 0; left: 0; display: flex; align-items: center; justify-content: space-between; gap: 0; pointer-events: auto; }
+.lobby-game-tool { position: relative; display: block; flex: 0 0 auto; width: clamp(58px,15.8cqw,72px); height: clamp(58px,15.8cqw,72px); padding: 0; border: 0; background: transparent; color: #efd59b; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: filter .18s ease,transform .18s ease; }
+.lobby-tool-art { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.lobby-tool-art img { position: absolute; max-width: none; pointer-events: none; }
+.lobby-game-tool small { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); padding: 3px 7px; color: #f3dfb3; background: #101d24ed; border: 1px solid #a18045; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; }
+.lobby-game-tool:is(:hover,:focus-visible,.is-lit) small { opacity: 1; }
+.lobby-tool-badge { position: absolute; right: -3px; top: -4px; display: grid; min-width: 19px; height: 19px; padding-inline: 3px; place-items: center; border: 1px solid #efcf7e; border-radius: 50%; color: #fff0b9; background: #4b3322; font-size: 11px; font-style: normal; }
+.lobby-departure { position: absolute; right: 0; bottom: 0; display: block; width: 32%; min-width: 84px; max-width: 144px; aspect-ratio: 1117/1319; padding: 0; border: 0; color: #3c210c; background: transparent; pointer-events: auto; touch-action: manipulation; -webkit-tap-highlight-color: transparent; filter: drop-shadow(0 5px 7px #0008); transform-origin: 50% 100%; transition: filter .18s ease,transform .18s ease; }
+.lobby-lantern-art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.lobby-lantern-art img { position: absolute; width: 102.51%; max-width: none; left: -1.16%; top: -.91%; }
+.lobby-departure-label { position: absolute; z-index: 3; top: 84.5%; left: 50%; transform: translate(-50%,-50%); color: #45230a; text-shadow: 0 1px #fff0b37a; font: 700 clamp(17px,5cqw,25px)/1 'Songti SC',serif; letter-spacing: .13em; text-indent: .13em; white-space: nowrap; pointer-events: none; }
+.lobby-lantern-glow { position: absolute; z-index: 1; top: 29%; left: 5%; width: 90%; height: 51%; background: radial-gradient(ellipse,#ffd75b65 0%,#ffc74c20 30%,transparent 66%); mix-blend-mode: screen; pointer-events: none; animation: lobby-light 2.6s ease-in-out infinite; }
+.lobby-lantern-flame { position: absolute; z-index: 2; top: 49%; left: 44%; width: 13%; height: 12%; border-radius: 55% 45% 55% 45%; background: radial-gradient(ellipse at 50% 65%,#fff9da9e,#ffe17c5c 40%,transparent 72%); transform-origin: 50% 100%; mix-blend-mode: screen; pointer-events: none; animation: lobby-flame 1.1s ease-in-out infinite alternate; }
+@media (max-width: 380px) {
+  .lobby-game-tools { left: -4px; }
+}
+/* Short portrait screens letterbox the artwork; the controls use the full screen width. */
+@container (max-width: 300px) {
+  .lobby-footer { left: calc(50% - min(50vw,240px) + 1px); right: calc(50% - min(50vw,240px) + 1px); }
+  .lobby-game-tools { left: 0; right: 86px; }
+  .lobby-departure { width: 84px; }
+}
+@keyframes lobby-light { 0%,100% { opacity: .62; } 45% { opacity: .95; } 75% { opacity: .74; } }
+@keyframes lobby-flame { from { transform: scaleX(.85) rotate(-7deg); opacity: .7; } to { transform: scaleY(1.15) rotate(5deg); opacity: 1; } }
+@keyframes lobby-rain { to { transform: translate(-18px,74px); } }
+@keyframes lobby-fog { to { transform: translateX(12%); opacity: .22; } }
+@keyframes lobby-tide { to { transform: translateY(4px); opacity: .6; } }
+@keyframes lobby-idle { 50% { transform: translateX(-50%) translateY(-1px) scaleY(1.014); } }
+@keyframes lobby-marker { 50% { transform: translateY(-3px); } }
+@keyframes lobby-dust { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: .28; } 85% { opacity: .12; } 100% { transform: translate(10px,-155px); opacity: 0; } }
+.lobby-scene[data-reduced="true"] *, .lobby-scene[data-reduced="true"] *::before { animation: none !important; transition: none !important; }
+.lobby-scene[data-reduced="true"] .lobby-rain, .lobby-scene[data-reduced="true"] .lobby-dust { display: none; }
+@media (prefers-reduced-motion: reduce) { .lobby-scene *, .lobby-scene *::before { animation: none !important; transition: none !important; } .lobby-rain,.lobby-dust { display: none; } }
+@media (max-height: 560px) { .lobby-title strong { font-size: 17px; } .lobby-title small { font-size: 11px; } }
+
+.lobby-resource-art { display: block; width: 20px; height: 22px; background-image: url('/assets/game/items.png'); background-size: 400% 400%; background-repeat: no-repeat; }
+.resource-gold { background-position: 66.6667% 33.3333%; }
+.resource-sample { background-position: 66.6667% 0; }
+.resource-parts { background-position: 100% 0; }

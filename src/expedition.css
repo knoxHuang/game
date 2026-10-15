@@ -1,0 +1,98 @@
+/* The expedition chart is a game prop, with its threat dossier below it. */
+#screen[data-panel="prepare"] {
+  top: calc(var(--top-safe) + 10px);
+  bottom: calc(var(--bottom-safe) + 10px);
+}
+.expedition-heading { min-height: 76px; padding: 10px 12px; }
+.expedition-heading h2 { font-size: 24px; }
+.expedition-heading .close-panel { width: 48px; height: 48px; }
+#screen[data-panel="prepare"] .prep-panel {
+  top: 78px; bottom: 68px; padding: 8px 9px 20px;
+  background-image: linear-gradient(#101d20cf,#171e1cf5),var(--game-frame);
+  background-size: auto,300% 300%;
+}
+.prep-panel .boss-world-map {
+  height: auto; min-height: 0; aspect-ratio: .95;
+  border: 6px solid #6f5129;
+  border-image: var(--game-frame) 210 / 9px / 0 stretch;
+  border-radius: 0;
+  box-shadow: 0 5px 12px #0008;
+}
+.prep-panel .boss-world-art img { object-fit: cover; }
+.prep-panel .boss-world-map::after { inset: 0; border-color: #e5c18138; }
+.chart-caption {
+  position: absolute; z-index: 2; top: 10px; left: 10px;
+  display: grid; gap: 4px; color: #ead5a3; text-shadow: 0 2px 3px #041218;
+}
+.chart-caption strong { font: 600 20px/1.3 var(--game-display); letter-spacing: .12em; }
+.chart-caption span { color: #b9b79e; font: 12px/1.3 var(--game-display); letter-spacing: .14em; }
+.prep-panel .boss-map-marker { width: 62px; height: 62px; border-radius: 50%; }
+.prep-panel .boss-map-art {
+  width: 62px; height: 62px; border: 3px ridge #b29155;
+  box-shadow: 0 3px 7px #000c,inset 0 0 0 1px #e7c47c;
+}
+.prep-panel .boss-map-art > img { display: block; width: 100%; height: 100%; object-fit: cover; image-rendering: auto; transform: scale(1.45); transform-origin: 50% 40%; }
+.prep-panel .boss-map-marker.is-locked { filter: saturate(.85); opacity: 1; }
+.prep-panel .boss-map-marker.is-selected .boss-map-art { border-color: #f1d48b; box-shadow: 0 0 0 2px #5b472a,0 0 15px #e9bf7777; }
+.prep-panel .boss-map-marker:enabled:hover .boss-map-art { filter: brightness(1.2); }
+.prep-panel .boss-map-marker:focus-visible { outline-offset: 5px; }
+.prep-panel .boss-map-marker:enabled:active .boss-map-art { transform: scale(.95); }
+.prep-panel .marker-rift { left: 73%; top: 20%; }
+.prep-panel .marker-monastery { left: 24%; top: 47%; }
+.prep-panel .marker-harbor { left: 73%; top: 75%; }
+.prep-panel .boss-marker-copy {
+  top: 65px; bottom: auto; width: 116px; padding: 4px 2px;
+  border: 0; background: #0a1b20e8;
+  box-shadow: 0 2px 0 #9d804d88;
+}
+.prep-panel .boss-marker-copy strong { font-size: 14px; }
+.prep-panel .boss-marker-copy small { display: none; }
+.prep-panel .boss-map-danger { top: -5px; right: -7px; min-width: 24px; height: 24px; font: 14px/1 var(--game-display); border: 2px ridge #c5a464; }
+.prep-panel .map-origin { left: 5%; bottom: 3%; padding: 5px; border: 0; font-size: 12px; }
+.chart-instruction { margin: 12px 4px 15px; color: #c9bea6; font-size: 14px; line-height: 1.55; }
+.expedition-dossier {
+  padding: 10px; border: 6px solid #6f5129;
+  border-image: var(--game-frame) 210 fill / 9px / 0 stretch;
+  background: #1b211d; box-shadow: 0 4px 12px #0005;
+}
+.prep-panel .selected-boss-panel {
+  grid-template-columns: 100px minmax(0,1fr); gap: 12px;
+  padding: 0; margin: 0; border: 0; background: transparent; box-shadow: none;
+}
+.prep-panel .selected-boss-art {
+  width: 100px; height: 118px; padding: 3px; border: 2px ridge #bd995b;
+  background: #102324; box-shadow: 0 2px 7px #0009;
+}
+.prep-panel .selected-boss-art img { display: block; width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
+.prep-panel .selected-boss-info { gap: 7px; }
+.dossier-index { color: #ab9368; font: 12px/1.3 var(--game-display); letter-spacing: .06em; }
+.selected-boss-info h3 { margin: 0; font: 600 23px/1.25 var(--game-display); color: #f0d69a; }
+.prep-panel .selected-boss-info > small { font-size: 14px; line-height: 1.4; }
+.boss-threat { display: grid; gap: 4px; font-size: 14px; color: #dcaf86; }
+.boss-threat i { font-size: 12px; font-style: normal; letter-spacing: .13em; }
+.boss-field-note { margin: 14px 0; color: #d6c9ad; font-size: 14px; line-height: 1.65; }
+.expedition-risk { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; padding: 9px 0; border-block: 1px solid #a4874d55; font-size: 14px; }
+.expedition-risk > span:last-child { color: #b7ac91; }
+.expedition-risk .risk-grade { font-size: 14px; }
+.expedition-risk .risk-high { color: #efa28b; }
+.expedition-risk .risk-low { color: #9acabb; }
+.prep-panel .boss-stat-compare { padding: 12px 0 0; gap: 12px; border: 0; background: transparent; }
+.prep-panel .boss-stat-compare > span:not(.boss-risk-copy),.prep-panel .boss-stat-compare small { font-size: 14px; }
+.prep-panel .boss-stat-compare strong { font: 600 24px/1.3 var(--game-display); color: #e9d6a8; }
+.prep-panel .boss-risk-copy { color: #bdb6a4; font-size: 14px; line-height: 1.6; }
+.prep-panel .prep-section { margin-top: 20px; padding: 0 4px 16px; border-bottom: 1px solid #a4874d55; }
+.prep-panel .section-title-row strong { color: #ead1a0; font: 600 19px/1.4 var(--game-display); }
+.prep-panel .section-title-row small,.prep-panel .empty-inline,.prep-panel .prep-quest small,.prep-panel .gear-summary { font-size: 14px; line-height: 1.6; }
+.prep-panel .prep-quest b { font-size: 14px; }
+.prep-panel .empty-inline { padding: 10px 0; color: #bdb39b; }
+.prep-panel .resource-summary { flex-wrap: wrap; gap: 10px; }
+.prep-panel .resource-summary .button { min-height: 48px; }
+.expedition-actions { padding-inline: 9px; gap: 8px; }
+.expedition-actions .button { min-height: 48px; font-size: 16px; }
+@media (max-width: 340px) {
+  .prep-panel .boss-marker-copy { width: 106px; }
+  .prep-panel .selected-boss-panel { grid-template-columns: 84px minmax(0,1fr); gap: 9px; }
+  .prep-panel .selected-boss-art { width: 84px; height: 110px; }
+  .selected-boss-info h3 { font-size: 21px; }
+}
+#screen[data-panel="prepare"] .expedition-heading { height: 76px; min-height: 76px; }
