@@ -1,0 +1,5 @@
+interface:
+  display_name: "数值与战斗节奏调优"
+  short_description: "以可重复测量评估战斗压力、成长与奖励节奏，区分数值假设和试玩证据。"
+policy:
+  allow_implicit_invocation: true

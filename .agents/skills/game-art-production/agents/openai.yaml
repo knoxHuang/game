@@ -1,0 +1,5 @@
+interface:
+  display_name: "游戏美术制作与接入"
+  short_description: "统一游戏美术设定与像素风格，制作角色场景资产并检查实际接入效果。"
+policy:
+  allow_implicit_invocation: true

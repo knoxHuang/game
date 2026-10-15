@@ -6,7 +6,8 @@
 ._*
 
 # Custom folder icons
-Icon
+Icon
+
 
 # Volume root files
 .DocumentRevisions-V100
@@ -29,3 +30,11 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Browser game build output
+node_modules/
+dist/
+.vite/
+
+# Generated from validated dungeon packages.
+src/content/catalog.generated.json

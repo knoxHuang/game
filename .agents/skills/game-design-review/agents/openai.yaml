@@ -1,0 +1,5 @@
+interface:
+  display_name: "游戏设计与阶段评估"
+  short_description: "核对确认要求、设计建议与实现，评估玩法取舍并整理可验证的方案。"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+interface:
+  display_name: "副本与内容修复"
+  short_description: "检查副本契约、资源、路线与海图，修复内容配置并验证运行结果。"
+policy:
+  allow_implicit_invocation: true

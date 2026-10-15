@@ -1,0 +1,5 @@
+interface:
+  display_name: "游戏试玩与集成验收"
+  short_description: "按交付范围试玩游戏循环，检查手机操作、恢复、视觉与性能并保留证据。"
+policy:
+  allow_implicit_invocation: true

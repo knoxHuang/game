@@ -1,0 +1,5 @@
+interface:
+  display_name: "案件与成长修复"
+  short_description: "追踪案件、奖励、消耗、升级与结算，修复重复领取及进度计算异常。"
+policy:
+  allow_implicit_invocation: true

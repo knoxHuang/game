@@ -1,0 +1,5 @@
+interface:
+  display_name: "战斗与操作修复"
+  short_description: "复现并修复战斗输入、计时、攻击、伤害与胜负状态，验证边界情况。"
+policy:
+  allow_implicit_invocation: true

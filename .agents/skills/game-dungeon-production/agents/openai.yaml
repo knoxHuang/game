@@ -1,0 +1,5 @@
+interface:
+  display_name: "完整副本制作"
+  short_description: "依据副本契约制作并接入独立主题内容，完成全套资源及目标包验收。"
+policy:
+  allow_implicit_invocation: true

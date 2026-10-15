@@ -1,0 +1,5 @@
+interface:
+  display_name: "界面与交互修复"
+  short_description: "排查游戏布局、触摸、焦点与竖屏适配，使用运行截图验证修复结果。"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+interface:
+  display_name: "存档与恢复修复"
+  short_description: "检查存档校验、写入顺序、恢复和兼容，保护既有数据并验证失败重试。"
+policy:
+  allow_implicit_invocation: true
