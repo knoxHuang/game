@@ -11,7 +11,13 @@ export default defineConfig({
     },
     renderChunk(code) {
       // Vite handles CSS URLs; runtime strings and dungeon JSON need the same base.
-      return { code: code.replace(/(?<![\w/])\/assets\//g, `${assetBase}assets/`), map: null };
+      // Keep the dungeon path validator aligned with the relocated JSON URLs.
+      const assetPattern = `${assetBase}assets/`.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+      return {
+        code: code.replace(/(?<![\w/])\/assets\//g, `${assetBase}assets/`)
+          .replaceAll('^\\/assets\\/', `^${assetPattern}`),
+        map: null,
+      };
     },
   }],
 });
