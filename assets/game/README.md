@@ -41,3 +41,7 @@
 `dockyard-arena.png`：内置ImageGen参考大厅生成的开阔船坞，整体5:6构图，供20×24单位战区使用；独立掩体由配置叠加。母图、实际提示词与导出状态见 `art-source/dungeons/tide_colossus/README.md`。当前是高密度PNG原型，ready规格导出尚未完成。
 
 `dockyard-arena-readable.png`：2026-10-16 首关战斗辨识重绘。冷灰靛木板、低对比中央区域、暖灯集中外围，替换首关旧背景引用。保留原图作历史资源。母图、内置 ImageGen 提示词、无损压缩与像素一致性记录见 `art-source/dungeons/tide_colossus/README.md`。怪物单像素边缘按类型区分；微小战利品由渲染层添加静态底托，经验菱形带深描边。
+
+## 手机启动资源优化（2026-10-16）
+
+共用图集与木铜面板的运行引用改用同名无损 WebP，原 PNG 保留作参考。尺寸与 RGBA 像素完全一致；来源、逐项体积和验证见 `art-source/startup-loading/README.md`。启动进度按实际已加载资源数显示，失败可重试，成功后才进入游戏。
