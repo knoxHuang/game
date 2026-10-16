@@ -6,7 +6,7 @@ import { battleCamera, BATTLE_HUD_HEIGHT, BOSS_HUD_HEIGHT } from './battle-camer
 import { dungeon, enemyDefinition, assetKey, bossAttack } from './content/registry.ts';
 import { colorNumber } from './content/schema.ts';
 import Phaser from 'phaser';
-import { actorKey, createTextures, preloadArt, enemyArt, queueDungeonArt, STARTUP_ART } from './art.ts';
+import { actorKey, createTextures, preloadArt, enemyArt, queueDungeonArt } from './art.ts';
 import { BOSSES, careerStats, QUESTS } from './model.ts';
 import type { Direction, GameState, Vec } from './model.ts';
 import { direction } from './geometry.ts';
@@ -34,22 +34,23 @@ class WorldScene extends Phaser.Scene {
   private loadingDungeon: string | null = null;
   private failedDungeon: string | null = null;
   private startupRetry = '';
+  private startupKeys: string[] = [];
   private ox = 0;
   private oy = 0;
   constructor(private read: () => GameState | null, private mode: () => RenderMode, private frame: (dt: number) => void, private ready: () => void, private assetProgress: AssetProgress) { super('world'); }
   private reportAssetProgress = () => {
-    const keys = Object.keys(STARTUP_ART);
+    const keys = this.startupKeys;
     this.assetProgress(keys.filter(key => this.textures.exists(key)).length, keys.length, 0);
   };
   preload() {
-    this.reportAssetProgress();
     this.load.on('filecomplete', this.reportAssetProgress);
     this.load.once('complete', () => this.load.off('filecomplete', this.reportAssetProgress));
-    preloadArt(this, this.startupRetry);
+    this.startupKeys = preloadArt(this, this.startupRetry);
+    this.reportAssetProgress();
   }
   retryStartupAssets() { this.startupRetry = String(Date.now()); this.scene.restart(); }
   create() {
-    const keys = Object.keys(STARTUP_ART), missing = keys.filter(key => !this.textures.exists(key));
+    const keys = this.startupKeys, missing = keys.filter(key => !this.textures.exists(key));
     if (missing.length) { this.assetProgress(keys.length - missing.length, keys.length, missing.length); return; }
     createTextures(this);
     this.staticLayer = this.add.container(0, 0);

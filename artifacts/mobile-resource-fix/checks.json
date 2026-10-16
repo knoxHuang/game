@@ -1,0 +1,33 @@
+{
+  "runtimeImages": 24,
+  "beforeBytes": 35735607,
+  "afterBytes": 6473018,
+  "alphaChannelsEqual": true,
+  "dimensionsEqual": true,
+  "allReferencedImagesPreloaded": true,
+  "allFailedRetryRecovered": true,
+  "existingRunRestoredPaused": true,
+  "automatedTests": 75,
+  "automatedFailures": 0,
+  "viewports": [
+    [
+      320,
+      480
+    ],
+    [
+      360,
+      640
+    ],
+    [
+      414,
+      896
+    ]
+  ],
+  "iphoneObserved": [
+    "startup progress advanced",
+    "home shown",
+    "lobby images complete",
+    "map and boss images shown"
+  ],
+  "note": "iPhone screenshots were captured on the compressed-image release; full-preload coverage is verified by art-loading.test.ts and browser recovery."
+}

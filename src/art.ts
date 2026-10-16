@@ -1,6 +1,6 @@
 import { spriteFrame } from './content/visuals.ts';
 import Phaser from 'phaser';
-import { dungeon, assetKey, enemyDefinition } from './content/registry.ts';
+import { assetKey, enemyDefinition } from './content/registry.ts';
 import type { EnemyRole } from './content/schema.ts';
 import type { BossId, Direction } from './model.ts';
 
@@ -10,44 +10,7 @@ export const bossArtKey = (id: BossId) => `boss-${id}`;
 export const actorKey = (kind: Kind, direction: Direction, frame = -1, _tier = 0) => `${kind}-${direction}${frame < 0 ? '' : `-walk-${frame % 4}`}`;
 export const ITEM_KEYS = ['weapon','armor','crystal','iron','radio','medkit','seal','scroll','device','lamp','chest','rock','compass','bag','chart','workbench'] as const;
 
-export const STARTUP_ART = {
-  'lobby-cutaway': '/assets/lobby/cutaway-harbor-mobile.webp',
-  'lobby-investigator': '/assets/lobby/investigator-cutaway-mobile.webp',
-  'lobby-tools': '/assets/lobby/brass-tools-mobile.webp',
-  'lobby-lantern': '/assets/lobby/departure-lantern-mobile.webp',
-  'ui-panel': '/assets/ui/brass-panel-mobile.webp',
-  'battle-hud-frame': '/assets/ui/harbor-mystery-frame-mobile.webp',
-  'actor-atlas': '/assets/game/actors-mobile.webp',
-  'enemy-atlas': '/assets/game/enemies-readable-mobile.webp',
-  'item-atlas': '/assets/game/items-mobile.webp',
-  'field-atlas': '/assets/game/field-tools-mobile.webp',
-  'boss-atlas': '/assets/game/bosses-mobile.webp',
-  'tide-boss-readable': '/assets/dungeons/tide_colossus/boss-readable-mobile.webp',
-  'pier-ground': '/assets/game/pier-ground-mobile.webp',
-} as const;
-
-export function preloadArt(scene: Phaser.Scene, retry = ''): void {
-  for (const [key, src] of Object.entries(STARTUP_ART)) {
-    if (!scene.textures.exists(key)) scene.load.image(key, retry ? `${src}?retry=${retry}` : src);
-  }
-}
-
-// Queue only the selected pack. Other dungeons do not add battle downloads to startup.
-export function queueDungeonArt(scene: Phaser.Scene, id: string): string[] {
-  const d=dungeon(id), keys:string[]=[];
-  const image=(key:string,src:string)=>{keys.push(key);if(!scene.textures.exists(key))scene.load.image(key,src);};
-  for(const role of ['beast','bug','cultist','guardian'] as const){
-    const sprite=enemyDefinition(id,role).sprite;
-    if(sprite.type==='sheet'){
-      const key=assetKey(id,role);keys.push(key);
-      if(!scene.textures.exists(key))scene.load.spritesheet(key,sprite.src,{frameWidth:sprite.frameSize,frameHeight:sprite.frameSize});
-    }
-  }
-  for(const [slot,src]of Object.entries(d.effects))if(src)image(assetKey(id,`effect-${slot}`),src);
-  if(d.arena.background)image(assetKey(id,'background'),d.arena.background);
-  for(const slot of ['floorArt','wallArt','obstacleArt'] as const){const art=d.biome[slot];if(art.type==='image')image(assetKey(id,slot),art.src);}
-  return keys;
-}
+export { preloadArt, queueDungeonArt } from './art-loading.ts';
 
 // Trim only transparent margins. Preserve the generated illustration and aspect ratio.
 function extract(scene: Phaser.Scene, atlas: string, key: string, rect: readonly number[], maxSize = Infinity): void {
