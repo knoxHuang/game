@@ -228,14 +228,15 @@ class WorldScene extends Phaser.Scene {
     for (const drop of room.drops.filter(d => !d.taken)) {
       const v = this.point(drop.pos), icon = drop.quest ? QUESTS[drop.quest].icon : drop.material ?? 'sample';
       if(drop.xp){
-        const radius=Math.max(5,Math.min(7,this.tile*.2)),x=v.x+(drop.material||drop.quest?9:0);
-        const y=v.y-(reduced?0:Math.sin(run.time*4+drop.pos.x)*1.2);
-        this.effects.fillStyle(0x06141e,.95).fillCircle(x,y,radius+3);
-        this.effects.fillStyle(0x5ff0d5,.18).fillCircle(x,y,radius+6);
-        const soul=[{x,y:y-radius*1.5},{x:x+radius,y:y-1},{x:x+radius*.6,y:y+radius},{x,y:y+radius*.65},{x:x-radius*.6,y:y+radius},{x:x-radius,y:y-1}];
-        this.effects.fillStyle(0x8dffe7,1).fillPoints(soul,true);
-        this.effects.lineStyle(1,0xdefdf4,1).strokePoints(soul,true);
-        this.effects.fillStyle(0xffffff,1).fillRect(x-1,y-radius*.6,2,radius);
+        const unit=Math.max(.9,Math.min(1,this.tile/30)),x=Math.round(v.x+(drop.material||drop.quest?8:0));
+        const y=Math.round(v.y-(reduced?0:Math.sin(run.time*4+drop.pos.x)*.6));
+        // A small spirit with a rounded head, face and trailing flame; not a gem.
+        const soul=[[-4,-1],[-3,-4],[-1,-5],[2,-5],[4,-2],[3,1],[1,3],[-2,5],[-1,1],[-3,1]].map(([dx,dy])=>({x:x+dx*unit,y:y+dy*unit}));
+        this.effects.fillStyle(0x61e3cc,.09).fillCircle(x,y,7*unit);
+        this.effects.fillStyle(0x6ce7d4,1).fillPoints(soul,true);
+        this.effects.lineStyle(1,0x08272e,1).strokePoints(soul,true);
+        this.effects.fillStyle(0xd5fff2,1).fillRect(x-unit,y-4*unit,2*unit,unit);
+        this.effects.fillStyle(0x12444b,1).fillRect(x-2*unit,y-2*unit,unit,2*unit).fillRect(x+unit,y-2*unit,unit,2*unit);
         if(!drop.material&&!drop.quest)continue;
       }
       // Static dark backing and category shapes keep tiny loot separate from wet wood.

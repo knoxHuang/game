@@ -1,0 +1,353 @@
+{
+  "results": [
+    {
+      "width": 187,
+      "height": 480,
+      "scenario": "battle",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 64,
+      "right": 253,
+      "scroll": 187,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 69,
+          "right": 108.8125,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 113.8125,
+          "right": 174.625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 206.9375,
+          "right": 248,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 187,
+      "height": 480,
+      "scenario": "boss",
+      "text": "3/3 · Boss残敌 91",
+      "x": 64,
+      "right": 253,
+      "scroll": 187,
+      "items": [
+        {
+          "text": "3/3 · Boss",
+          "x": 69,
+          "right": 141.890625,
+          "size": "14px"
+        },
+        {
+          "text": "",
+          "x": 146.890625,
+          "right": 146.890625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 91",
+          "x": 201.1875,
+          "right": 248,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 187,
+      "height": 480,
+      "scenario": "reduced",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 64,
+      "right": 253,
+      "scroll": 187,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 69,
+          "right": 108.8125,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 113.8125,
+          "right": 174.625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 206.9375,
+          "right": 248,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 187,
+      "height": 480,
+      "scenario": "system-reduced",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 64,
+      "right": 253,
+      "scroll": 187,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 69,
+          "right": 108.8125,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 113.8125,
+          "right": 174.625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 206.9375,
+          "right": 248,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 215,
+      "height": 640,
+      "scenario": "battle",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 72,
+      "right": 289,
+      "scroll": 215,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 77,
+          "right": 116.8125,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 121.8125,
+          "right": 182.625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 242.9375,
+          "right": 284,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 215,
+      "height": 640,
+      "scenario": "boss",
+      "text": "3/3 · Boss残敌 91",
+      "x": 72,
+      "right": 289,
+      "scroll": 215,
+      "items": [
+        {
+          "text": "3/3 · Boss",
+          "x": 77,
+          "right": 149.890625,
+          "size": "14px"
+        },
+        {
+          "text": "",
+          "x": 154.890625,
+          "right": 154.890625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 91",
+          "x": 237.1875,
+          "right": 284,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 215,
+      "height": 640,
+      "scenario": "reduced",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 72,
+      "right": 289,
+      "scroll": 215,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 77,
+          "right": 116.8125,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 121.8125,
+          "right": 182.625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 242.9375,
+          "right": 284,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 215,
+      "height": 640,
+      "scenario": "system-reduced",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 72,
+      "right": 289,
+      "scroll": 215,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 77,
+          "right": 116.8125,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 121.8125,
+          "right": 182.625,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 242.9375,
+          "right": 284,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 253,
+      "height": 896,
+      "scenario": "battle",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 82.796875,
+      "right": 337.609375,
+      "scroll": 253,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 87.796875,
+          "right": 127.609375,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 132.609375,
+          "right": 193.421875,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 291.546875,
+          "right": 332.609375,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 253,
+      "height": 896,
+      "scenario": "boss",
+      "text": "3/3 · Boss残敌 91",
+      "x": 82.796875,
+      "right": 337.609375,
+      "scroll": 253,
+      "items": [
+        {
+          "text": "3/3 · Boss",
+          "x": 87.796875,
+          "right": 160.6875,
+          "size": "14px"
+        },
+        {
+          "text": "",
+          "x": 165.6875,
+          "right": 165.6875,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 91",
+          "x": 285.796875,
+          "right": 332.609375,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 253,
+      "height": 896,
+      "scenario": "reduced",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 82.796875,
+      "right": 337.609375,
+      "scroll": 253,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 87.796875,
+          "right": 127.609375,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 132.609375,
+          "right": 193.421875,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 291.546875,
+          "right": 332.609375,
+          "size": "14px"
+        }
+      ]
+    },
+    {
+      "width": 253,
+      "height": 896,
+      "scenario": "system-reduced",
+      "text": "1/3 波下波 15秒残敌 9",
+      "x": 82.796875,
+      "right": 337.609375,
+      "scroll": 253,
+      "items": [
+        {
+          "text": "1/3 波",
+          "x": 87.796875,
+          "right": 127.609375,
+          "size": "14px"
+        },
+        {
+          "text": "下波 15秒",
+          "x": 132.609375,
+          "right": 193.421875,
+          "size": "14px"
+        },
+        {
+          "text": "残敌 9",
+          "x": 291.546875,
+          "right": 332.609375,
+          "size": "14px"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

@@ -353,8 +353,8 @@
 #screen[data-page="run"] { top:calc(var(--top-safe) + 80px); }
 #screen[data-page="run"] .battle-top {
   top:-80px; left:0; right:0; height:80px; min-height:80px;
-  display:grid; grid-template-columns:minmax(0,1fr) 48px; grid-template-rows:31px 18px;
-  gap:4px 14px; padding:18px clamp(5px,calc(10vw - 27px),21px) 9px clamp(64px,20vw,96px);
+  display:grid; grid-template-columns:minmax(0,1fr) 48px; grid-template-rows:31px 22px;
+  gap:3px 14px; padding:18px clamp(5px,calc(10vw - 27px),21px) 6px clamp(64px,20vw,96px);
   border:0; border-radius:0; box-shadow:none;
   background:none;
   isolation:isolate;
@@ -372,10 +372,10 @@
 .battle-top .energy-track i { display:block; height:100%; background:#88cbb4; }
 .battle-top.is-critical .health-fill { background:linear-gradient(180deg,#946547bb,#6e3733cc); box-shadow:inset 0 1px 0 #ffe6a866; }
 .battle-top.is-critical .health-caption { color:#e9af8a; }
-.battle-top .wave-bar { position:static; grid-column:1/3; grid-row:2; display:flex; align-items:center; width:76%; min-height:0; padding:0; border:0; background:none; gap:6px; white-space:nowrap; }
-.battle-top .wave-bar strong { color:#30251b; font:600 14px/1.2 "Songti SC",serif; }
-.battle-top .wave-bar span { color:#3e3023; font:14px/1.2 sans-serif; }
-.battle-top .wave-bar .enemy-count { margin-left:auto; color:#3e3023; }
+.battle-top .wave-bar { position:static; grid-column:1; grid-row:2; display:flex; align-items:center; width:100%; min-height:22px; padding:1px 4px; border:1px solid #8d754e; background:#102124; gap:5px; white-space:nowrap; box-shadow:inset 0 1px 2px #0009; }
+.battle-top .wave-bar strong { color:#ffe3a3; font:600 14px/1.2 sans-serif; font-variant-numeric:tabular-nums; }
+.battle-top .wave-bar span { color:#e4e9dc; font:600 14px/1.2 sans-serif; font-variant-numeric:tabular-nums; }
+.battle-top .wave-bar .enemy-count { margin-left:auto; color:#e4e9dc; }
 #screen[data-page="run"] .battle-top .pause-button {
   grid-column:2; grid-row:1 / 3; display:grid; place-items:center; width:48px; height:48px; min-height:48px;
   padding:0; margin:0; align-self:start; border:0; border-image:none; border-radius:0; background:none; box-shadow:none;
