@@ -1,7 +1,8 @@
 import { rogueArea, skillLevel } from './roguelite.ts';
+import { arenaArtFrame } from './arena-art.ts';
 import { sampleMotion } from './actor-motion.ts';
 import type { MotionSample } from './actor-motion.ts';
-import { battleWorld, bossHealth } from './battle.ts';
+import { battleWorld, bossHealth, enemyHealth } from './battle.ts';
 import { battleCamera, BATTLE_HUD_HEIGHT, BOSS_HUD_HEIGHT } from './battle-camera.ts';
 import { dungeon, enemyDefinition, assetKey, bossAttack } from './content/registry.ts';
 import { colorNumber } from './content/schema.ts';
@@ -133,7 +134,13 @@ class WorldScene extends Phaser.Scene {
       const arena=definition.arena,fullWidth=arena.width*this.tile,fullHeight=arena.height*this.tile;
       const floor=this.add.graphics();floor.fillStyle(colorNumber(definition.biome.wash)).fillRect(0,0,fullWidth,fullHeight);this.staticLayer.add(floor);
       const background=arena.background?assetKey(run.boss,'background'):definition.biome.floorArt.type==='image'?assetKey(run.boss,'floorArt'):'pier-ground';
-      const ground=this.add.image(fullWidth/2,fullHeight/2,background).setDisplaySize(fullWidth,fullHeight);this.staticLayer.add(ground);
+      const groundTexture=this.textures.get(background),groundSource=groundTexture.getSourceImage();
+      const fit=arenaArtFrame(groundSource.width,groundSource.height,fullWidth,fullHeight),frameName=`arena-${arena.width}-${arena.height}`;
+      if(!groundTexture.has(frameName)){
+        const first=groundTexture.firstFrame;
+        groundTexture.add(frameName,0,fit.x,fit.y,fit.width,fit.height);groundTexture.firstFrame=first;
+      }
+      const ground=this.add.image(fullWidth/2,fullHeight/2,background,frameName).setScale(fit.scale);this.staticLayer.add(ground);
       // Continue the authored sea beyond the finite pier without stretching the arena or moving its bounds.
       if(arena.background==='/assets/game/dockyard-arena-readable-mobile.webp'){
         const texture=this.textures.get(background),source=texture.getSourceImage();
@@ -144,7 +151,7 @@ class WorldScene extends Phaser.Scene {
           texture.firstFrame=originalFrame;
         }
         const sea=this.add.tileSprite(0,fullHeight,fullWidth,h,background,'sea-margin').setOrigin(0,0);
-        sea.setTileScale(fullWidth/source.width,fullHeight/source.height);
+        sea.setTileScale(fit.scale,fit.scale);
         this.staticLayer.add(sea);
       }
       // The first arena has an authored neutral floor; preserve its value hierarchy.
@@ -215,15 +222,21 @@ class WorldScene extends Phaser.Scene {
     }
     if(run.rogue){
       const level=skillLevel(s,'lantern');
-      if(level){const v=this.point(run.player.pos),radius=Math.min(careerStats(s).range,(1.2+level*.18)*rogueArea(s))*this.tile;this.effects.lineStyle(1,0xe2bb69,.55).strokeCircle(v.x,v.y,radius);}
+      if(level){const v=this.point(run.player.pos),radius=Math.min(careerStats(s).range,(1.8+level*.22)*rogueArea(s))*this.tile;this.effects.lineStyle(1,0xe2bb69,.55).strokeCircle(v.x,v.y,radius);}
       for(const field of run.rogue.fields){const v=this.point(field.pos),radius=(1+field.level*.16)*rogueArea(s)*this.tile;this.effects.fillStyle(0x77ddcc,.12).fillCircle(v.x,v.y,radius);this.effects.lineStyle(2,0x84e1ca,.7).strokeCircle(v.x,v.y,radius);this.effects.lineBetween(v.x-radius*.5,v.y,v.x+radius*.5,v.y);}
     }
     for (const drop of room.drops.filter(d => !d.taken)) {
       const v = this.point(drop.pos), icon = drop.quest ? QUESTS[drop.quest].icon : drop.material ?? 'sample';
-      if(drop.xp&&!drop.material&&!drop.quest){
-        const diamond=[{x:v.x,y:v.y-4},{x:v.x+3,y:v.y},{x:v.x,y:v.y+4},{x:v.x-3,y:v.y}];
-        this.effects.fillStyle(0xadefdf,1).fillPoints(diamond,true);
-        this.effects.lineStyle(1.5,0x10232d,1).strokePoints(diamond,true);continue;
+      if(drop.xp){
+        const radius=Math.max(5,Math.min(7,this.tile*.2)),x=v.x+(drop.material||drop.quest?9:0);
+        const y=v.y-(reduced?0:Math.sin(run.time*4+drop.pos.x)*1.2);
+        this.effects.fillStyle(0x06141e,.95).fillCircle(x,y,radius+3);
+        this.effects.fillStyle(0x5ff0d5,.18).fillCircle(x,y,radius+6);
+        const soul=[{x,y:y-radius*1.5},{x:x+radius,y:y-1},{x:x+radius*.6,y:y+radius},{x,y:y+radius*.65},{x:x-radius*.6,y:y+radius},{x:x-radius,y:y-1}];
+        this.effects.fillStyle(0x8dffe7,1).fillPoints(soul,true);
+        this.effects.lineStyle(1,0xdefdf4,1).strokePoints(soul,true);
+        this.effects.fillStyle(0xffffff,1).fillRect(x-1,y-radius*.6,2,radius);
+        if(!drop.material&&!drop.quest)continue;
       }
       // Static dark backing and category shapes keep tiny loot separate from wet wood.
       const size=Math.max(14,this.tile*(drop.quest?.55:.46)),half=size/2;
@@ -291,7 +304,7 @@ class WorldScene extends Phaser.Scene {
         this.effects.lineStyle(e.kind === 'guardian' ? this.tile * 1.4 : 3, COLORS.danger, 0.2).lineBetween(v.x, v.y, v.x + Math.cos(e.angle) * length, v.y + Math.sin(e.angle) * length);
         this.effects.lineStyle(2, COLORS.danger, 0.95).lineBetween(v.x, v.y, v.x + Math.cos(e.angle) * length, v.y + Math.sin(e.angle) * length);
       }
-      const enemyMaxHp = enemyDefinition(run.boss,e.kind).hp*(e.elite?2:1);
+      const enemyMaxHp = enemyHealth(run,e.kind,e.elite);
       if(e.elite){this.effects.lineStyle(2,0xe4c578,.9).strokeCircle(v.x,v.y,this.tile*.65);this.effects.fillStyle(0xe4c578).fillRect(v.x-3,v.y-this.tile,6,6);}
       if (e.hp < enemyMaxHp && e.kind !== 'guardian') {
         const maxHp = enemyMaxHp, width = this.tile * 1.25, height = Math.max(3, Math.min(5, this.tile * 0.18));
@@ -327,7 +340,7 @@ class WorldScene extends Phaser.Scene {
         this.effects.lineStyle(1,0xffedbd).lineBetween(mx-dy*3,my+dx*3,mx+dy*3,my-dx*3);
       }
     }
-    const target = nearbyInteraction(s);
+    const target = run.battle?.won?null:nearbyInteraction(s);
     this.label.setVisible(!!target);
     if (target) this.label.setPosition(v.x, v.y - this.tile * 1.1).setText(target.locked ?? target.label);
     if (run.survey > 0) this.effects.lineStyle(3, COLORS.teal).strokeCircle(v.x, v.y, this.tile * 0.65);

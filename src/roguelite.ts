@@ -1,13 +1,13 @@
 import type { CareerId, GameState, Run, Vec } from './model.ts';
 
 export const SKILLS = {
-  revolver: { name:'黄铜连射', kind:'attack', max:5, detail:'提高伤害与射速；满阶配航海罗盘可觉醒交叉弹幕。', icon:'weapon' },
-  sigil: { name:'溺光符弹', kind:'attack', max:5, detail:'扩大爆炸范围；满阶配感应线圈可觉醒连锁爆裂。', icon:'ritual' },
+  revolver: { name:'黄铜连射', kind:'attack', max:5, detail:'3阶双发、5阶三发；满阶配航海罗盘可觉醒交叉弹幕。', icon:'weapon' },
+  sigil: { name:'溺光符弹', kind:'attack', max:5, detail:'3阶双符、5阶三符；满阶配感应线圈可觉醒连锁爆裂。', icon:'ritual' },
   harpoon: { name:'贯潮鱼叉', kind:'attack', max:5, detail:'提高贯穿与伤害；满阶配镀铜弹匣可觉醒三叉猎潮。', icon:'harpoon' },
   lantern: { name:'守夜提灯', kind:'attack', max:5, detail:'自动灼烧身边敌群；升级提高伤害与照明半径。', icon:'lamp' },
   arc: { name:'黄铜电弧', kind:'attack', max:5, detail:'自动跳跃打击相邻目标；升级增加跳跃数量。', icon:'device' },
   tide: { name:'退潮符阵', kind:'attack', max:5, detail:'在敌群脚下留下持续伤害的符阵。', icon:'ritual' },
-  bell: { name:'沉钟回响', kind:'attack', max:5, detail:'周期震荡周围敌人；升级扩大冲击半径。', icon:'seal' },
+  bell: { name:'沉钟回响', kind:'attack', max:5, detail:'打断并推开普通敌群，Boss只受伤害；升级扩大冲击半径。', icon:'seal' },
   magazine: { name:'镀铜弹匣', kind:'support', max:3, detail:'每阶伤害 +12%。贯潮鱼叉觉醒配件。', icon:'weapon' },
   compass: { name:'航海罗盘', kind:'support', max:3, detail:'每阶收集半径 +0.55，移速 +5%。黄铜连射觉醒配件。', icon:'compass' },
   watch: { name:'怀表机芯', kind:'support', max:3, detail:'每阶攻击间隔缩短 8%。', icon:'device' },
@@ -17,6 +17,7 @@ export const SKILLS = {
 export type SkillId = keyof typeof SKILLS;
 export type SkillOffer = SkillId | 'heal' | 'salvage' | 'supply' | `awaken:${'revolver'|'sigil'|'harpoon'}`;
 export type RogueRun = {
+  pacingVersion?: 2;
   xp:number; level:number; picks:number; skills:Partial<Record<SkillId,number>>;
   offers:SkillOffer[]; seed:number; rerolls:number; awakenings:SkillId[]; awakeTokens:number;
   cooldowns:Partial<Record<SkillId,number>>; fields:{pos:Vec; life:number; pulse:number; level:number}[];
@@ -35,7 +36,7 @@ export const EQUIPMENT_UPGRADES:Partial<Record<EquipmentId,EquipmentId>>={servic
 export type Research = { energy:number; training:{power:number;vitality:number}; inventory:EquipmentId[]; equipped:Partial<Record<'weapon'|'armor'|'charm',EquipmentId>>; careers:CareerId[]; converted?:boolean };
 export const freshResearch=():Research=>({energy:0,training:{power:0,vitality:0},inventory:['service_revolver','oilskin'],equipped:{weapon:'service_revolver',armor:'oilskin'},careers:['investigator']});
 export const mainSkill=(career:CareerId):SkillId=>career==='occultist'?'sigil':career==='harpooner'?'harpoon':'revolver';
-export const freshRogue=(career:CareerId,seed:number):RogueRun=>({xp:0,level:1,picks:0,skills:{[mainSkill(career)]:1},offers:[],seed:Math.max(1,seed>>>0),rerolls:1,awakenings:[],awakeTokens:0,cooldowns:{},fields:[],gold:0,research:0,equipment:[],wavePaid:0});
+export const freshRogue=(career:CareerId,seed:number):RogueRun=>({pacingVersion:2,xp:0,level:1,picks:0,skills:{[mainSkill(career)]:1},offers:[],seed:Math.max(1,seed>>>0),rerolls:1,awakenings:[],awakeTokens:0,cooldowns:{},fields:[],gold:0,research:0,equipment:[],wavePaid:0});
 export const localRequired=(level:number)=>12+4*(level-1);
 export const skillLevel=(s:GameState,id:SkillId)=>s.run?.rogue?.skills[id]??0;
 export const equipmentStats=(s:GameState)=>Object.values(s.research?.equipped??{}).reduce((a,id)=>{const d=EQUIPMENT[id];return {damage:a.damage+d.damage,health:a.health+d.health,pickup:a.pickup+d.pickup};},{damage:0,health:0,pickup:0});
@@ -43,12 +44,12 @@ export const rogueDamage=(s:GameState)=>1+Math.min(.35,(s.research?.training.pow
 export const rogueHealth=(s:GameState)=>100+Math.min(40,(s.research?.training.vitality??0)*4+equipmentStats(s).health)+skillLevel(s,'lining')*15;
 export const rogueCooldown=(s:GameState)=>1-skillLevel(s,'watch')*.08;
 export const rogueArea=(s:GameState)=>1+skillLevel(s,'coil')*.12;
-export const pickupRadius=(s:GameState)=>1.1+skillLevel(s,'compass')*.55+equipmentStats(s).pickup;
+export const pickupRadius=(s:GameState)=>(s.run?.rogue?.pacingVersion===2?3:1.1)+skillLevel(s,'compass')*.55+equipmentStats(s).pickup;
 function random(r:RogueRun){r.seed=(Math.imul(r.seed,1664525)+1013904223)>>>0;return r.seed/4294967296;}
 const recipes={revolver:'compass',sigil:'coil',harpoon:'magazine'} as const;
 export function eligibleOffers(r:RogueRun):SkillOffer[]{
   const owned=Object.keys(r.skills) as SkillId[];
-  const attacks=owned.filter(id=>SKILLS[id].kind==='attack').length,supports=owned.length-attacks;
+  const attacks=owned.filter(id=>SKILLS[id as SkillId].kind==='attack').length,supports=owned.length-attacks;
   const main=owned.find(id=>id in recipes);
   const pool:SkillOffer[]=(Object.keys(SKILLS) as SkillId[]).filter(id=>{
     const level=r.skills[id]??0;
@@ -65,9 +66,9 @@ export function rollOffers(r:RogueRun):void {
   if(awake){offers.push(awake);pool.splice(pool.indexOf(awake),1);}
   const owned=pool.filter(id=>!id.startsWith('awaken:')&&!!r.skills[id as SkillId]);
   if(!offers.length&&owned.length){const pick=owned[Math.floor(random(r)*owned.length)];offers.push(pick);pool.splice(pool.indexOf(pick),1);}
-  // Offer early area coverage before the player commits all three attack slots.
-  if(r.picks<3&&!(r.skills.lantern||r.skills.arc||r.skills.tide||r.skills.bell)&&offers.length<3){
-    const area=pool.filter(id=>['lantern','arc','tide','bell'].includes(id));
+  // Keep a new attack visible until all three attack slots are filled.
+  if(owned.filter(id=>SKILLS[id as SkillId].kind==='attack').length<3&&offers.length<3){
+    const area=pool.filter(id=>['lantern','arc','tide','bell'].includes(id)&&!r.skills[id as SkillId]);
     if(area.length){const pick=area[Math.floor(random(r)*area.length)];offers.push(pick);pool.splice(pool.indexOf(pick),1);}
   }
   while(offers.length<3&&pool.length){const i=Math.floor(random(r)*pool.length);offers.push(pool.splice(i,1)[0]);}
@@ -126,4 +127,11 @@ export function settleRogue(s:GameState,run:Run){
   if(!s.research||!run.rogue)return;
   const r=run.rogue;s.gold=Math.min(1e9,s.gold+r.gold);s.research.energy=Math.min(1e9,s.research.energy+r.research);
   for(const item of r.equipment)if(!s.research.inventory.includes(item))s.research.inventory.push(item);
+}
+
+export function awardBossVictory(run:Run):boolean {
+  const r=run.rogue;
+  if(!r||!run.battle?.won||r.wavePaid===5)return false;
+  r.gold=Math.min(1e9,r.gold+45);r.wavePaid=5;r.fields=[];r.offers=[];
+  return true;
 }

@@ -3,6 +3,7 @@ type Mode = 'shop' | 'dungeon' | 'silent';
 
 /** Quiet, gesture-unlocked procedural audio. No network assets or playback dependencies. */
 export class AudioManager {
+  private nextLootSound = 0;
   settings = { music: true, sound: true };
   private context?: AudioContext;
   private output?: GainNode;
@@ -49,6 +50,10 @@ export class AudioManager {
 
   play(kind: Sound): void {
     if (!this.settings.sound || this.context?.state !== 'running' || this.disposed) return;
+    if(kind==='loot'){
+      if(this.context.currentTime<this.nextLootSound)return;
+      this.nextLootSound=this.context.currentTime+.08;
+    }
     const notes: Record<Sound, [number, number, OscillatorType, number]> = {
       attack: [280, 0.09, 'triangle', 75], hit: [130, 0.11, 'square', 55],
       hurt: [170, 0.20, 'sawtooth', 65], dodge: [480, 0.10, 'sine', 150],

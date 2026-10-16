@@ -134,7 +134,8 @@
         "type": "builtin",
         "key": "beast"
       },
-      "energy": 2
+      "energy": 2,
+      "rogueHp": 28
     },
     "bug": {
       "name": "附蛰虫",
@@ -156,7 +157,8 @@
         "type": "builtin",
         "key": "bug"
       },
-      "energy": 3
+      "energy": 3,
+      "rogueHp": 24
     },
     "cultist": {
       "name": "溺亡秘仪师",
@@ -178,7 +180,8 @@
         "type": "builtin",
         "key": "cultist"
       },
-      "energy": 5
+      "energy": 5,
+      "rogueHp": 36
     }
   },
   "effects": {
@@ -247,6 +250,42 @@
     ],
     "rogueWaves": [
       {
+        "at": 5,
+        "batches": 6,
+        "batchInterval": 7,
+        "enemies": {
+          "beast": 52,
+          "bug": 4,
+          "cultist": 0,
+          "guardian": 0
+        }
+      },
+      {
+        "at": 50,
+        "batches": 6,
+        "batchInterval": 8,
+        "enemies": {
+          "beast": 72,
+          "bug": 14,
+          "cultist": 6,
+          "guardian": 0
+        }
+      },
+      {
+        "at": 100,
+        "batches": 1,
+        "batchInterval": 0,
+        "enemies": {
+          "beast": 0,
+          "bug": 0,
+          "cultist": 0,
+          "guardian": 1
+        }
+      }
+    ],
+    "rogueBossHealth": 1200,
+    "legacyRogueWaves": [
+      {
         "at": 8,
         "batches": 5,
         "batchInterval": 10,
@@ -302,7 +341,7 @@
         }
       }
     ],
-    "rogueBossHealth": 5000
+    "legacyRogueBossHealth": 5000
   },
   "arena": {
     "name": "黑潮船坞",

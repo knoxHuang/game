@@ -28,7 +28,7 @@ const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const rewards = z.strictObject({ energy: bounded(0, 10000).int().default(0), crystal: bounded(0, 10).int(), iron: bounded(0, 10).int() });
 const source = z.strictObject({ title: text, url: z.url().regex(/^https:\/\//), evidence: text });
 const minion = z.strictObject({
-  name: label, relationship: text, energy: bounded(0, 1000).int().default(0), hp: bounded(1, 500), radius: bounded(.2, .6), size: bounded(.6, 2),
+  name: label, relationship: text, energy: bounded(0, 1000).int().default(0), hp: bounded(1, 500), rogueHp: bounded(1, 500).optional(), radius: bounded(.2, .6), size: bounded(.6, 2),
   speed: bounded(.1, 4), range: bounded(1, 8), keepAway: bounded(0, 5), windup: bounded(.5, 2), recover: bounded(.3, 3),
   damage: bounded(1, 40), projectileSpeed: bounded(.5, 8),
   drop: material, evidenceQuest: quest.nullable(), clearQuest: quest.nullable(), sprite: spriteSchema,
@@ -41,7 +41,7 @@ const arena = z.strictObject({
   objects: z.array(z.strictObject({id:z.string().regex(/^[a-z][a-z0-9-]{1,40}$/),kind:z.enum(['chest','exit']),at:point,material:material.nullable(),amount:bounded(0,10).int()})).max(12),
   hazards: z.array(point).max(8),
 });
-const waveSchema=z.array(z.strictObject({at:bounded(2,300),batches:bounded(1,8).int(),batchInterval:bounded(0,10),enemies:z.strictObject({beast:bounded(0,96).int(),bug:bounded(0,32).int(),cultist:bounded(0,16).int(),guardian:bounded(0,1).int()})})).length(5);
+const waveSchema=z.array(z.strictObject({at:bounded(2,300),batches:bounded(1,8).int(),batchInterval:bounded(0,10),enemies:z.strictObject({beast:bounded(0,96).int(),bug:bounded(0,32).int(),cultist:bounded(0,16).int(),guardian:bounded(0,1).int()})}));
 export const dungeonSchema = z.strictObject({
   schemaVersion: z.literal(3), style: z.literal(STYLE_ID), id: z.string().regex(/^[a-z][a-z0-9_]{2,63}$/),
   status: z.enum(['prototype','ready']), name: label, zone: label, description: text,
@@ -54,23 +54,23 @@ export const dungeonSchema = z.strictObject({
   effects: z.strictObject({projectile: file.nullable(), ground: file.nullable()}),
   boss: z.strictObject({ hp: bounded(20, 500), radius: bounded(.6, 1.5), size: bounded(3, 5), tint: color, phaseAt: bounded(.2, .8), armor: bounded(.05, 1), windup: z.tuple([bounded(.6, 2),bounded(.6, 2)]), recover: z.tuple([bounded(.6, 3),bounded(.6, 3)]), attacks: z.array(z.discriminatedUnion('type',[ground,fan])).min(2).max(4), rewards, sprite: spriteSchema }),
   minions: z.strictObject({ beast: minion, bug: minion, cultist: minion }),
-  combat: z.strictObject({ warning: bounded(.6, 1.5), safeDistance: bounded(2.5, 4), waves: waveSchema, rogueWaves: waveSchema.optional(), rogueBossHealth: bounded(100,10000).int().optional() }),
+  combat: z.strictObject({ warning: bounded(.6, 1.5), safeDistance: bounded(2.5, 4), waves: waveSchema.length(5), rogueWaves: z.union([waveSchema.length(3),waveSchema.length(5)]).optional(), legacyRogueWaves: waveSchema.length(5).optional(), rogueBossHealth: bounded(100,10000).int().optional(), legacyRogueBossHealth: bounded(100,10000).int().optional() }),
   arena,
 }).superRefine((pack, ctx) => {
   const fail = (message: string, path: (string | number)[]) => ctx.addIssue({ code: 'custom', message, path });
   if (pack.lore.kind === 'adaptation' && !pack.lore.sources.length) fail('改编神话必须提供原著来源与描述依据', ['lore','sources']);
-  for(const [key,waves] of [['waves',pack.combat.waves],['rogueWaves',pack.combat.rogueWaves]] as const){
+  for(const [key,waves] of [['waves',pack.combat.waves],['rogueWaves',pack.combat.rogueWaves],['legacyRogueWaves',pack.combat.legacyRogueWaves]] as const){
   if(!waves)continue;let total=0;
   waves.forEach((wave,i)=>{
     const count=Object.values(wave.enemies).reduce((a,b)=>a+b,0);total+=count;
-    if(i<4&&(wave.enemies.guardian!==0||count<1))fail('前四波必须为普通怪', ['combat',key,i]);
-    if(i===4&&(wave.enemies.guardian!==1||count!==1))fail('第五波必须为唯一 Boss', ['combat',key,i]);
-    if(wave.batches>count || (i===4&&wave.batches!==1))fail('分批数量必须与敌群预算匹配', ['combat',key,i,'batches']);
+    if(i<waves.length-1&&(wave.enemies.guardian!==0||count<1))fail('Boss前的阶段必须为普通怪', ['combat',key,i]);
+    if(i===waves.length-1&&(wave.enemies.guardian!==1||count!==1))fail('最后阶段必须为唯一 Boss', ['combat',key,i]);
+    if(wave.batches>count || (i===waves.length-1&&wave.batches!==1))fail('分批数量必须与敌群预算匹配', ['combat',key,i,'batches']);
     if(wave.batches>1&&wave.batchInterval<3)fail('小批次至少间隔3秒', ['combat',key,i,'batchInterval']);
-    if(i<4 && wave.at+(wave.batches-1)*wave.batchInterval>=waves[i+1].at)fail('批次必须在下一阶段前开始', ['combat',key,i]);
+    if(i<waves.length-1 && wave.at+(wave.batches-1)*wave.batchInterval>=waves[i+1].at)fail('批次必须在下一阶段前开始', ['combat',key,i]);
     if(i>0&&wave.at-waves[i-1].at<10)fail('相邻波次至少间隔10秒', ['combat',key,i,'at']);
   });
-  if(total>(key==='rogueWaves'?401:161))fail('整局敌人预算超限', ['combat',key]);
+  if(total>(key==='waves'?161:401))fail('整局敌人预算超限', ['combat',key]);
   }
   const inside=(p:{x:number;y:number})=>p.x>=2&&p.x<=pack.arena.width-2&&p.y>=2&&p.y<=pack.arena.height-2;
   if(!inside(pack.arena.entry)||[...pack.arena.obstacles,...pack.arena.hazards,...pack.arena.objects.map(o=>o.at)].some(p=>!inside(p)))fail('场地坐标越界', ['arena']);

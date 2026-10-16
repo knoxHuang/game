@@ -67,10 +67,10 @@ test('非法研究、技能、候选、装备、冷却与新旧调查混搭都�
   const s=playing();assert.equal(validState(s),true);
   for(const mutate of [(v:any)=>v.research.energy=-1,(v:any)=>v.research.equipped.armor='service_revolver',(v:any)=>v.run.rogue.skills.revolver=6,(v:any)=>v.run.rogue.offers=['bogus'],(v:any)=>v.run.rogue.cooldowns.arc=Infinity,(v:any)=>delete v.run.rogue]){const bad=structuredClone(s);mutate(bad);assert.equal(validState(bad),false);}
 });
-test('新五波时间表及预算与旧档分开，90只同屏上限不丢后续批次',()=>{
+test('新三阶段时间表及预算与旧档分开，90只同屏上限不丢后续批次',()=>{
   const s=playing(),run=s.run!,waves=combatWaves(run);
-  assert.deepEqual(waves.map(w=>w.at),[8,70,140,210,280]);assert.equal(waves.reduce((a,w)=>a+Object.values(w.enemies).reduce((x,y)=>x+y,0),0),305);
-  run.time=279;updateBattle(run,1.5);updateBattle(run,1.5);
+  assert.deepEqual(waves.map(w=>w.at),[5,50,100]);assert.equal(waves.reduce((a,w)=>a+Object.values(w.enemies).reduce((x,y)=>x+y,0),0),149);
+  run.time=99;updateBattle(run,1.5);updateBattle(run,1.5);
   assert.ok(battleWorld(run).enemies.filter(e=>e.hp>0).length<=90);assert.ok(run.battle!.pending.length>0);assert.equal(validState(s),true);
   const old=freshState('legacy');startRun(old);assert.equal(combatWaves(old.run!)[4].at,105);
 });
@@ -91,7 +91,7 @@ test('人物贴住窄缝时，三种竖屏仍能为大体型Boss找到生成路�
   const {spawnPoint,bossHealth}=await import('../src/battle.ts');
   for(const viewport of [{width:320,height:480},{width:360,height:640},{width:414,height:896}]){
     const s=playing(),run=s.run!;run.player.pos={x:7.623570450466336,y:8.682111193696862};
-    assert.ok(spawnPoint(run,0,'guardian',viewport));assert.equal(bossHealth(run),5000);
+    assert.ok(spawnPoint(run,0,'guardian',viewport));assert.equal(bossHealth(run),1200);
   }
 });
 test('三职业觉醒分别改变弹幕、爆炸与贯穿，状态可保存',()=>{
@@ -102,16 +102,16 @@ test('三职业觉醒分别改变弹幕、爆炸与贯穿，状态可保存',()=
     r.skills[main]=5;r.skills[support]=3;r.awakenings=[main];
     battleWorld(run).enemies=[{id:'target',kind:'beast',pos:{x:run.player.pos.x+3,y:run.player.pos.y},home:{...run.player.pos},hp:100,mode:'recover',timer:0,angle:0,turn:0,hit:false,flash:0,lost:0}];
     tick(s,emptyInput(),.01);const shots=battleWorld(run).projectiles.filter(p=>p.owner==='player');
-    assert.equal(shots.length,career==='occultist'?1:career==='investigator'?4:3);
+    assert.equal(shots.length,career==='occultist'?1:career==='investigator'?6:3);
     if(career==='occultist'){assert.equal(shots[0].splash,2);assert.equal(shots[0].blastChain,true);}else assert.ok(shots.every(p=>(p.pierce??0)>=2));
     assert.equal(validState(s),true);assert.deepEqual(parseSave(JSON.stringify(s)).run!.rogue!.awakenings,[main]);
   }
 });
-test('第三波首次精英不会被批次取整漏掉，第四波提供第二次机会',()=>{
-  const s=playing(),run=s.run!;run.time=148;updateBattle(run,0);
-  assert.ok(run.battle!.pending.some(p=>p.elite&&p.id.includes('-2-1-cultist-0')));
-  run.time=210;updateBattle(run,0);
-  assert.ok(run.battle!.pending.some(p=>p.elite&&p.id.includes('-3-0-cultist-0')));
+test('两段进攻各出现一只耐打精英，不被批次取整漏掉',()=>{
+  const s=playing(),run=s.run!;run.time=33;updateBattle(run,0);
+  assert.ok(run.battle!.pending.some(p=>p.elite&&p.id.includes('-0-4-beast-0')));
+  run.time=74;updateBattle(run,0);
+  assert.ok(run.battle!.pending.some(p=>p.elite&&p.id.includes('-1-3-beast-0')));
   assert.equal(validState(s),true);
 });
 

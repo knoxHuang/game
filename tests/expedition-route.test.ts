@@ -36,12 +36,12 @@ test('后区按前区报告、基地和内容完成状态开放，出发入口�
   assert.equal(dungeonAccess(s, pack.id).available, false, '未完成的内容不能启程');
 });
 
-test('只有击败Boss并安全返所才记录报告，重复调查和重载不复制', () => {
+test('击败Boss后退出也按成功记录报告，重复调查和重载不复制', () => {
   const s = freshState('legacy');
   startRun(s); finishRun(s, true);
   assert.deepEqual(s.bossReports, []);
   startRun(s); s.run!.battle!.won = true; finishRun(s, false);
-  assert.deepEqual(s.bossReports, []);
+  assert.deepEqual(s.bossReports, ['tide_colossus']);
   for (let i = 0; i < 2; i++) {
     startRun(s); s.run!.battle!.won = true; finishRun(s, true);
   }

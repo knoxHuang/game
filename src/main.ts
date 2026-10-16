@@ -95,7 +95,7 @@ async function commit(mutator: (next: GameState) => string | null, after?: (next
 let storeOpened = false;
 
 function recordAutosave() {
-  if (!state || !storeOpened) return;
+  if (!state || !storeOpened || busy) return;
   if(nextAutoSave){autoSaveDirty=true;return;}
   const snapshot = structuredClone(state);
   const task=store.save(snapshot);
@@ -149,6 +149,7 @@ function startAdventure(target?: BossId) {
 
 function finaliseRun(success: boolean) {
   if (!state || !state.run || busy) return;
+  autoSaveDirty=false;
   clearInputs();
   void commit(next => { finishRun(next, success); return null; }, () => {
     page = 'result'; paused = false; view.closePanel(); audio.setMode('shop');
@@ -207,10 +208,10 @@ function route(action: string, value?: string) {
   if (action === 'confirm:abandon') { const id = chooseQuestId(value); if (id) void commit(next => abandonQuest(next, id), () => view.toastMessage('案件已放弃。')); return; }
   if (action === 'confirm:exit') { finaliseRun(true); return; }
   if (action === 'confirm:abandon-run') { finaliseRun(false); return; }
-  if (action === 'abandon-run') { view.openConfirmation('结束本次调查？', state?.run?.rogue?'本局等级与技能清空。研究能量、金币、装备与材料保留，案件进度不会增加。':'本次未撤离的证据和物资会丢失，案件进度不会增加。', 'abandon-run'); return; }
+  if (action === 'abandon-run') { view.openConfirmation('放弃本次调查？', state?.run?.rogue?'尚未击败 Boss，本次将按失败结束。本局等级与技能清空，已收集资源保留，案件进度不增加。':'本次未撤离的证据和物资会丢失，案件进度不会增加。', 'abandon-run'); return; }
   if (action === 'confirm:import-save' && pendingImport) {
     const saved = pendingImport; pendingImport = null;
-    void commit(next => { replaceProfile(next,saved); return null; }, next => { page = next.run ? 'run' : next.summary ? 'result' : 'shop'; paused = page === 'run'; view.closePanel(); if(paused)view.openPanel('pause'); });
+    void commit(next => { replaceProfile(next,saved); if(next.run?.battle?.won&&next.run.player.hp>0)finishRun(next,true); return null; }, next => { page = next.run ? 'run' : next.summary ? 'result' : 'shop'; paused = page === 'run'; view.closePanel(); if(paused)view.openPanel('pause'); });
     return;
   }
   if (action === 'cancel') { pendingImport = null; if (page === 'run') { paused = true; view.openPanel('pause'); } refresh(true); return; }
@@ -324,7 +325,11 @@ async function openStoredGame() {
   startup=true;view.refresh(true);
   try {
     await store.open();storeOpened=true;
-    const loaded=await store.load();
+    let loaded=await store.load();
+    if(loaded?.run?.battle?.won&&loaded.run.player.hp>0){
+      const completed=structuredClone(loaded);finishRun(completed,true);
+      await store.save(completed);loaded=completed;
+    }
     startupError=null;state=loaded;
     if (loaded) page=loaded.run?'run':loaded.summary?'result':'shop';
     else page='home';
@@ -367,6 +372,7 @@ function frame(delta:number) {
   if(state.run.room!==oldRoom){if(oldRoom>=0)recordAutosave();}
   if(result.critical||state.run.player.hp!==oldHp||now>nextSave){nextSave=now+1000;recordAutosave();}
   if(state.run.rogue?.offers.length){clearInputs();audio.setMode('silent');}
+  if(state.run.battle?.won&&state.run.player.hp>0){paused=true;audio.setMode('silent');finaliseRun(true);return;}
   if(result.dead){paused=true;audio.setMode('silent');finaliseRun(false);}
   view.refresh();
 }
@@ -395,7 +401,7 @@ async function bootstrap() {
   await openStoredGame();
   loading.remove();
   const heartbeat=window.setInterval(()=>view.refresh(),120);
-  window.addEventListener('pagehide',()=>{window.clearInterval(heartbeat);keys.clear();input=emptyInput();if(state&&storeOpened)void store.save(structuredClone(state)).catch(()=>{});audio.dispose();renderer?.destroy();},{once:true});
+  window.addEventListener('pagehide',()=>{window.clearInterval(heartbeat);keys.clear();input=emptyInput();if(state&&storeOpened&&!busy)void store.save(structuredClone(state)).catch(()=>{});audio.dispose();renderer?.destroy();},{once:true});
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden&&page==='run'&&state?.run){clearInputs();paused=true;audio.setMode('silent');view.openPanel('pause');recordAutosave();}
   });

@@ -343,7 +343,7 @@
   :is(.button,.pause-link,.close-panel,.lobby-game-tool,.lobby-departure) { transition: none; }
 }
 
-.arena-overview {position:relative;flex-shrink:0;width:100%;max-width:360px;margin:auto;overflow:hidden;border:3px ridge var(--game-metal);background-size:100% 100%;background-color:#11242a;box-shadow:inset 0 0 25px #0009;}
+.arena-overview {position:relative;flex-shrink:0;width:100%;max-width:360px;margin:auto;overflow:hidden;border:3px ridge var(--game-metal);background-size:cover;background-position:center;background-color:#11242a;box-shadow:inset 0 0 25px #0009;}
 .arena-map-object,.arena-map-obstacle {position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;width:7%;aspect-ratio:1;}
 .arena-overview .pixel-icon {width:100%;height:100%;border:0;background:transparent;}
 .arena-overview .pixel-icon img {width:100%;height:100%;object-fit:contain;}

@@ -1,4 +1,4 @@
-import { freshResearch, rogueHealth, rogueDamage, rogueCooldown, rogueArea, skillLevel, localRequired, settleRogue } from './roguelite.ts';
+import { freshResearch, rogueHealth, rogueDamage, rogueCooldown, rogueArea, skillLevel, localRequired, settleRogue, awardBossVictory } from './roguelite.ts';
 import type { EquipmentId, Research, RogueRun } from './roguelite.ts';
 import { DUNGEONS_BY_ID } from './content/registry.ts';
 import { DEFAULT_DUNGEON } from './content/schema.ts';
@@ -46,6 +46,7 @@ export type Run = {
   energyGained?: number; survey: number; harm: Record<string, number>; potionsUsed: number; tutorial: boolean;
 };
 export type Summary = {
+  bossDefeated?: boolean;
   rogue?: {level:number;gold:number;research:number;equipment:EquipmentId[]}; success: boolean; energyGained?: number; materials: Record<Material, number>; ready: QuestId[];
   progress: Partial<Record<QuestId, number>>; harm: Record<string, number>; potionsUsed: number;
 };
@@ -129,7 +130,7 @@ export function setArmorEquipped(s: GameState, equipped: boolean): string | null
 }
 export const careerStats = (s: GameState) => {
   const career = CAREERS[s.career] ?? CAREERS.investigator;
-  if(s.research){const level=skillLevel(s,s.career==='occultist'?'sigil':s.career==='harpooner'?'harpoon':'revolver')||1;return {...career,damage:career.damage*(1+.3*(level-1))*rogueDamage(s),cooldown:career.cooldown*rogueCooldown(s)*(1-.06*(level-1)),splash:career.splash*rogueArea(s)*(1+.12*(level-1))};}
+  if(s.research){const level=skillLevel(s,s.career==='occultist'?'sigil':s.career==='harpooner'?'harpoon':'revolver')||1;return {...career,damage:career.damage*(1+.3*(level-1))*rogueDamage(s),cooldown:career.cooldown*rogueCooldown(s)*(1-.06*(level-1)),splash:Math.min(2,career.splash*rogueArea(s)*(1+.28*(level-1)))};}
   return { ...career, damage: career.damage * (s.weapon ? 1.25 : 1) * (1 + .02 * (experience(s).level - 1)) };
 };
 export const attackDamage = (s: GameState) => Math.round(careerStats(s).damage);
@@ -196,6 +197,17 @@ export function buyUpgrade(s: GameState, id: UpgradeId): string | null {
 export function finishRun(s: GameState, success: boolean): Summary | null {
   const run = s.run;
   if (!run) return null;
+  const bossDefeated=!!run.battle?.won&&run.player.hp>0;
+  success=success||bossDefeated;
+  if(bossDefeated){
+    awardBossVictory(run);
+    for(const drop of run.world?.drops??[]){
+      if(drop.taken)continue;
+      drop.taken=true;
+      if(drop.material&&drop.amount)run.materials[drop.material]=Math.min(1e9,run.materials[drop.material]+drop.amount);
+      if(drop.quest&&s.quests.some(q=>q.id===drop.quest&&!q.ready))run.progress[drop.quest]=Math.min(QUESTS[drop.quest].goal,(run.progress[drop.quest]??0)+1);
+    }
+  }
   const ready: QuestId[] = [];
   if(run.rogue){settleRogue(s,run);s.materials.crystal=Math.min(1e9,s.materials.crystal+run.materials.crystal);s.materials.iron=Math.min(1e9,s.materials.iron+run.materials.iron);}
   if (success) {
@@ -208,7 +220,7 @@ export function finishRun(s: GameState, success: boolean): Summary | null {
       if (q.ready) ready.push(q.id);
     }
   }
-  const summary: Summary = { ...(run.rogue?{rogue:{level:run.rogue.level,gold:run.rogue.gold,research:run.rogue.research,equipment:run.rogue.equipment}}:{}), success, energyGained: run.energyGained ?? 0, materials: { ...run.materials }, ready, progress: { ...run.progress }, harm: { ...run.harm }, potionsUsed: run.potionsUsed };
+  const summary: Summary = { bossDefeated, ...(run.rogue?{rogue:{level:run.rogue.level,gold:run.rogue.gold,research:run.rogue.research,equipment:run.rogue.equipment}}:{}), success, energyGained: run.energyGained ?? 0, materials: { ...run.materials }, ready, progress: { ...run.progress }, harm: { ...run.harm }, potionsUsed: run.potionsUsed };
   s.summary = summary; s.run = null;
   return summary;
 }

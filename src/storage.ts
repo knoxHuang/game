@@ -21,7 +21,7 @@ function validResearch(v:unknown):boolean{
   return Object.entries(v.equipped).every(([slot,id])=>equipmentId(id)&&EQUIPMENT[id as keyof typeof EQUIPMENT].slot===slot&&(v.inventory as unknown[]).includes(id));
 }
 function validRogue(v:unknown,career:GameState['career'],arena:{width:number;height:number}):boolean{
-  if(!record(v)||!integer(v.xp)||!integer(v.level,1,1000)||v.picks!==Number(v.level)-1||!integer(v.seed,0,4294967295)||!integer(v.rerolls,0,1)||!integer(v.awakeTokens,0,2)||!integer(v.gold)||!integer(v.research)||!integer(v.wavePaid,0,5)||!record(v.skills)||!record(v.cooldowns)||!Array.isArray(v.offers)||v.offers.length>3||new Set(v.offers).size!==v.offers.length||!Array.isArray(v.awakenings)||v.awakenings.length>1||!v.awakenings.every(id=>id===mainSkill(career))||!Array.isArray(v.equipment)||v.equipment.length>6||!v.equipment.every(equipmentId)||!Array.isArray(v.fields)||v.fields.length>8)return false;
+  if(!record(v)||(v.pacingVersion!==undefined&&v.pacingVersion!==2)||!integer(v.xp)||!integer(v.level,1,1000)||v.picks!==Number(v.level)-1||!integer(v.seed,0,4294967295)||!integer(v.rerolls,0,1)||!integer(v.awakeTokens,0,2)||!integer(v.gold)||!integer(v.research)||!integer(v.wavePaid,0,5)||!record(v.skills)||!record(v.cooldowns)||!Array.isArray(v.offers)||v.offers.length>3||new Set(v.offers).size!==v.offers.length||!Array.isArray(v.awakenings)||v.awakenings.length>1||!v.awakenings.every(id=>id===mainSkill(career))||!Array.isArray(v.equipment)||v.equipment.length>6||!v.equipment.every(equipmentId)||!Array.isArray(v.fields)||v.fields.length>8)return false;
   const entries=Object.entries(v.skills);
   if(!entries.every(([id,n])=>Object.hasOwn(SKILLS,id)&&integer(n,1,SKILLS[id as SkillId].max))||!v.skills[mainSkill(career)]||entries.filter(([id])=>['revolver','sigil','harpoon'].includes(id)).length!==1||entries.filter(([id])=>SKILLS[id as SkillId].kind==='attack').length>3||entries.filter(([id])=>SKILLS[id as SkillId].kind==='support').length>3)return false;
   const pool=eligibleOffers(v as unknown as RogueRun);
@@ -47,8 +47,8 @@ export function validState(v: unknown): v is GameState {
     if (!record(p) || !vec(p.pos) || !num(p.hp, 0, maxHealth(v as unknown as GameState)) || !num(p.potions, 0, 2) || !num(p.facing, -Math.PI, Math.PI) || !num(p.angle, -Math.PI, Math.PI) || !oneOf(p.action, ['none', 'attack', 'dodge', 'skill', 'hurt']) || !num(p.timer, 0, 1) || !num(p.dodgeCd, 0, 1.2) || !num(p.skillCd, 0, 6) || !num(p.fireCd, 0, 2) || !num(p.invincible, 0, 0.8) || !Array.isArray(p.hits) || !p.hits.every(str)) return false;
     if (!Array.isArray(r.rooms) || r.rooms.length !== (arenaRun?1:7) || (arenaRun&&r.room!==0)) return false;
     if((r.battle===undefined)!==(r.world===undefined))return false;
-    if(arenaRun){const b=r.battle;if(!record(b)||!Array.isArray(b.batches)||b.batches.length!==5||!b.batches.every((n,i)=>num(n,0,combatWaves(r as unknown as GameState['run'] & {})[i].batches)&&Number.isInteger(n)))return false;}
-    if(r.battle!==undefined){const b=r.battle;if(!record(b)||!oneOf(b.version,[2,3])||!num(b.wave,0,5)||!Number.isInteger(b.wave)||!bool(b.won)||!Array.isArray(b.pending)||b.pending.length>(r.rogue?401:161)||!b.pending.every(p=>record(p)&&str(p.id)&&(p.queued===undefined||bool(p.queued))&&(p.elite===undefined||bool(p.elite))&&oneOf(p.kind,['beast','bug','cultist','guardian'])&&vec(p.pos)&&num(p.remaining,0,1.5)&&oneOf(p.side,['north','east','south','west'])))return false;}
+    if(arenaRun){const b=r.battle;if(!record(b)||!Array.isArray(b.batches)||b.batches.length!==combatWaves(r as unknown as GameState['run'] & {}).length||!b.batches.every((n,i)=>num(n,0,combatWaves(r as unknown as GameState['run'] & {})[i].batches)&&Number.isInteger(n)))return false;}
+    if(r.battle!==undefined){const b=r.battle;if(!record(b)||!oneOf(b.version,[2,3])||!num(b.wave,0,arenaRun?combatWaves(r as unknown as GameState['run'] & {}).length:5)||!Number.isInteger(b.wave)||!bool(b.won)||!Array.isArray(b.pending)||b.pending.length>(r.rogue?401:161)||!b.pending.every(p=>record(p)&&str(p.id)&&(p.queued===undefined||bool(p.queued))&&(p.elite===undefined||bool(p.elite))&&oneOf(p.kind,['beast','bug','cultist','guardian'])&&vec(p.pos)&&num(p.remaining,0,1.5)&&oneOf(p.side,['north','east','south','west'])))return false;}
     for (const room of [...r.rooms,...(r.world===undefined?[]:[r.world])]) {
       const global=room===r.world;
       if (!record(room) || !num(room.id, 0, 6) || !bool(room.visited) || !num(room.grace, 0, 0.8) || !oneOf(room.encounter, ['pending', 'active', 'clear']) || !num(room.wave, 0, 10) || !num(room.waveDelay, 0, 2)) return false;
@@ -61,6 +61,7 @@ export function validState(v: unknown): v is GameState {
   }
   if (v.summary !== null) {
     const s = v.summary;
+    if(record(s)&&s.bossDefeated!==undefined&&!bool(s.bossDefeated))return false;
     if(record(s)&&s.rogue!==undefined){const r=s.rogue;if(!record(r)||!integer(r.level,1,1000)||!integer(r.gold)||!integer(r.research)||!Array.isArray(r.equipment)||!r.equipment.every(equipmentId))return false;}
     if (record(s) && s.energyGained !== undefined && (!num(s.energyGained) || !Number.isInteger(s.energyGained))) return false;
     if (!record(s) || !bool(s.success) || !materials(s.materials) || !progress(s.progress) || !harm(s.harm) || !num(s.potionsUsed, 0, 2) || !Array.isArray(s.ready) || !s.ready.every(id => str(id) && Object.hasOwn(QUESTS, String(id)))) return false;

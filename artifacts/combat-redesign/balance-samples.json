@@ -1,0 +1,114 @@
+{
+  "command": "node scripts/combat-sample.ts",
+  "method": "Fixed route, automatic skill priorities, potion below 50 HP, dodge near contact. Six seeded engine samples, excluding time choosing upgrades; not human win rates.",
+  "samples": [
+    {
+      "career": "investigator",
+      "seed": 101,
+      "time": 113,
+      "hp": 124,
+      "won": true,
+      "level": 11,
+      "firstUpgrade": 17,
+      "bossArrivalHp": 140,
+      "maxEnemies": 23,
+      "skills": {
+        "revolver": 5,
+        "bell": 1,
+        "arc": 2,
+        "lining": 2,
+        "compass": 1
+      }
+    },
+    {
+      "career": "investigator",
+      "seed": 202,
+      "time": 114,
+      "hp": 140,
+      "won": true,
+      "level": 11,
+      "firstUpgrade": 17,
+      "bossArrivalHp": 140,
+      "maxEnemies": 23,
+      "skills": {
+        "revolver": 5,
+        "bell": 1,
+        "arc": 2,
+        "lining": 2,
+        "compass": 1
+      }
+    },
+    {
+      "career": "occultist",
+      "seed": 101,
+      "time": 111,
+      "hp": 96,
+      "won": true,
+      "level": 11,
+      "firstUpgrade": 17,
+      "bossArrivalHp": 140,
+      "maxEnemies": 17,
+      "skills": {
+        "sigil": 5,
+        "bell": 1,
+        "arc": 2,
+        "lining": 2,
+        "compass": 1
+      }
+    },
+    {
+      "career": "occultist",
+      "seed": 202,
+      "time": 160,
+      "hp": 130,
+      "won": true,
+      "level": 11,
+      "firstUpgrade": 19,
+      "bossArrivalHp": 130,
+      "maxEnemies": 18,
+      "skills": {
+        "sigil": 5,
+        "bell": 1,
+        "arc": 2,
+        "lining": 2,
+        "compass": 1
+      }
+    },
+    {
+      "career": "harpooner",
+      "seed": 101,
+      "time": 121,
+      "hp": 124,
+      "won": true,
+      "level": 11,
+      "firstUpgrade": 19,
+      "bossArrivalHp": 140,
+      "maxEnemies": 18,
+      "skills": {
+        "harpoon": 5,
+        "bell": 1,
+        "arc": 2,
+        "lining": 2,
+        "compass": 1
+      }
+    },
+    {
+      "career": "harpooner",
+      "seed": 202,
+      "time": 110,
+      "hp": 86,
+      "won": true,
+      "level": 11,
+      "firstUpgrade": 17,
+      "bossArrivalHp": 130,
+      "maxEnemies": 16,
+      "skills": {
+        "harpoon": 5,
+        "bell": 1,
+        "arc": 2,
+        "lining": 2,
+        "compass": 1
+      }
+    }
+  ]
+}

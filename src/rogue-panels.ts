@@ -9,7 +9,7 @@ const equipmentImages: Partial<Record<EquipmentId, string>> = {
 };
 const btn=(action:string,label:string,value='',disabled=false)=>`<button class="button button-secondary" data-action="${action}" data-value="${value}"${disabled?' disabled':''}>${label}</button>`;
 const art=(key:string,icon:(key:string)=>string)=>`<img src="${icon(key)}" alt="">`;
-const choiceDetails:Record<SkillId,string>={revolver:'提高单发伤害，缩短攻击间隔。',sigil:'提高符弹伤害，扩大爆炸范围。',harpoon:'提高伤害；第3、5阶增加贯穿。',lantern:'自动灼烧近身敌人，提高伤害与半径。',arc:'提高电弧伤害，增加跳跃目标。',tide:'生成持续伤害符阵，提高伤害与范围。',bell:'提高冲击伤害，扩大震荡范围。',magazine:'全部伤害 +12%。',compass:'收集半径 +0.55，移速 +5%。',watch:'全部自动攻击间隔缩短 8%。',lining:'生命上限 +15，并恢复新增生命。',coil:'全部范围攻击半径 +12%。'};
+const choiceDetails:Record<SkillId,string>={revolver:'提高伤害与射速；3阶双发，5阶三发。',sigil:'提高伤害与爆炸范围；3阶双符，5阶三符。',harpoon:'提高伤害；第3、5阶增加贯穿。',lantern:'自动灼烧近身敌人，提高伤害与半径。',arc:'提高电弧伤害，增加跳跃目标。',tide:'生成持续伤害符阵，提高伤害与范围。',bell:'击退并打断普通敌群，升级扩大半径。',magazine:'全部伤害 +12%。',compass:'收集半径 +0.55，移速 +5%。',watch:'全部自动攻击间隔缩短 8%。',lining:'生命上限 +15，并恢复新增生命。',coil:'全部范围攻击半径 +12%。'};
 export function renderSkillChoice(s:GameState,icon:(key:string)=>string){
   const r=s.run?.rogue;if(!r?.offers.length)return '';
   return `<div class="dialog-backdrop"><section class="dialog-card rogue-choices" role="dialog" aria-modal="true" aria-labelledby="rogue-choice-title" tabindex="-1"><p class="eyebrow">本局 Lv.${r.level} → ${r.level+1} · 战斗已暂停</p><h2 id="rogue-choice-title">选择一项强化</h2><p class="rogue-choice-hint">攻击 ${Object.keys(r.skills).filter(id=>SKILLS[id as SkillId].kind==='attack').length}/3 · 辅助 ${Object.keys(r.skills).filter(id=>SKILLS[id as SkillId].kind==='support').length}/3 · 本局有效</p><div class="rogue-choice-list">${r.offers.map(offer=>{

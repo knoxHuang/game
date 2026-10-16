@@ -1,13 +1,13 @@
 import type { GameEvent } from './engine.ts';
 import type { Enemy, GameState } from './model.ts';
 import { battleWorld } from './battle.ts';
-import { distance, lineClear } from './geometry.ts';
+import { distance, lineClear, moveBody } from './geometry.ts';
 import { rogueArea, rogueCooldown, rogueDamage, skillLevel } from './roguelite.ts';
 import { careerStats } from './model.ts';
 import { battleCamera } from './battle-camera.ts';
-import { dungeon } from './content/registry.ts';
+import { dungeon, enemyDefinition } from './content/registry.ts';
 
-type Hit=(enemy:Enemy,damage:number)=>void;
+type Hit=(enemy:Enemy,damage:number,effect?:'wave')=>void;
 export function tickAutoSkills(s:GameState,dt:number,hit:Hit,visual:(event:GameEvent)=>void,viewport={width:360,height:640}){
   const run=s.run!,r=run.rogue;if(!r)return;
   const world=battleWorld(run),p=run.player;
@@ -20,13 +20,14 @@ export function tickAutoSkills(s:GameState,dt:number,hit:Hit,visual:(event:GameE
     if(r.cooldowns[id]!>0)continue;
     const enemies=targets();if(!enemies.length)continue;
     if(id==='lantern'){
-      const radius=Math.min(castRange,(1.2+level*.18)*area);
+      const radius=Math.min(castRange,(1.8+level*.22)*area);
       if(!enemies.some(e=>distance(p.pos,e.pos)<radius))continue;
       r.cooldowns[id]=.8*rogueCooldown(s);
+      visual({kind:'ability',ability:'lantern',pos:{...p.pos},radius});
       for(const e of enemies)if(distance(p.pos,e.pos)<radius)hit(e,(5+level*3)*power);
     }else if(id==='arc'){
       if(!enemies.some(e=>distance(p.pos,e.pos)<castRange))continue;
-      r.cooldowns[id]=2*rogueCooldown(s);
+      r.cooldowns[id]=1.7*rogueCooldown(s);
       let origin=p.pos;
       for(let i=0;i<level+1;i++){
         const target=enemies.filter(e=>e.hp>0&&distance(origin,e.pos)<(i===0?castRange:2.6)&&lineClear(run.boss,origin,e.pos)).sort((a,b)=>distance(origin,a.pos)-distance(origin,b.pos))[0];
@@ -39,9 +40,13 @@ export function tickAutoSkills(s:GameState,dt:number,hit:Hit,visual:(event:GameE
     }else{
       const radius=Math.min(castRange,(2.2+level*.3)*area);
       if(!enemies.some(e=>distance(p.pos,e.pos)<radius))continue;
-      r.cooldowns[id]=3.5*rogueCooldown(s);
+      r.cooldowns[id]=2.8*rogueCooldown(s);
       visual({kind:'ability',ability:'bell',pos:{...p.pos},radius});
-      for(const e of enemies)if(distance(p.pos,e.pos)<radius)hit(e,(15+level*6)*power);
+      for(const e of enemies)if(distance(p.pos,e.pos)<radius){
+        hit(e,(15+level*6)*power,'wave');
+        const d=distance(p.pos,e.pos);
+        if(e.hp>0&&e.kind!=='guardian'&&d>0)moveBody(run.boss,e.pos,{x:(e.pos.x-p.pos.x)*.5/d,y:(e.pos.y-p.pos.y)*.5/d},enemyDefinition(run.boss,e.kind).radius);
+      }
     }
   }
   for(const field of r.fields){

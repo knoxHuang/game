@@ -1,0 +1,42 @@
+{
+  "viewports": [
+    [
+      320,
+      480
+    ],
+    [
+      360,
+      640
+    ],
+    [
+      414,
+      896
+    ]
+  ],
+  "bossAutoResult": true,
+  "victoryRetainedAfterReload": true,
+  "victoryGold": 60,
+  "victoryResearch": 40,
+  "victoryMaterials": {
+    "crystal": 3,
+    "iron": 3
+  },
+  "abandonBeforeBossRemainsFailure": true,
+  "reducedMotionSoulRegionUnchanged": true,
+  "reducedMotionComparison": {
+    "imageSize": [
+      360,
+      640
+    ],
+    "soulRegion": [
+      40,
+      270,
+      95,
+      340
+    ],
+    "otherPixelsChanged": true
+  },
+  "note": "Browser checks use isolated local fixture saves. No real player saves were edited. Phone play feel is not established by these checks.",
+  "automatedTests": 85,
+  "automatedFailures": 0
+}

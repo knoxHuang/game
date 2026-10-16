@@ -1,5 +1,5 @@
 import { freshRogue } from './roguelite.ts';
-import { emptyRoom } from './battle.ts';
+import { emptyRoom, combatWaves } from './battle.ts';
 import { dungeonAccess, emptyMaterials, maxHealth } from './model.ts';
 import type { GameState } from './model.ts';
 import { dungeon } from './content/registry.ts';
@@ -18,5 +18,6 @@ export function startRun(s:GameState):string|null {
     battle:{version:3,wave:0,batches:[0,0,0,0,0],won:false,pending:[]},world,rooms:[emptyRoom(0)],
     materials:emptyMaterials(),progress:{},survey:0,harm:{},potionsUsed:0,tutorial};
   if(s.research){s.run.rogue=freshRogue(s.career,s.sequence*2654435761);s.run.player.hp=maxHealth(s);}
+  s.run.battle!.batches=combatWaves(s.run).map(()=>0);
   s.extraPotion=false;s.summary=null;return null;
 }

@@ -1,6 +1,6 @@
 import { tickAutoSkills } from './combat-skills.ts';
-import { addLocalXp, pickupRadius, skillLevel, mainSkill } from './roguelite.ts';
-import { aliveEnemies, battleWorld, ensureBattle, updateBattle, winBattle, bossHealth } from './battle.ts';
+import { addLocalXp, pickupRadius, skillLevel, mainSkill, awardBossVictory } from './roguelite.ts';
+import { combatWaves, aliveEnemies, battleWorld, ensureBattle, updateBattle, winBattle, bossHealth } from './battle.ts';
 import { battleCamera } from './battle-camera.ts';
 import { bossAttack, dungeon, enemyDefinition } from './content/registry.ts';
 import { BOSSES, careerStats, gainEnergy, experience, MATERIAL_NAMES, QUESTS } from './model.ts';
@@ -10,7 +10,7 @@ import { direction, distance, isFree, lineClear, moveBody, pathDirection } from 
 export type InputState = { move: Vec; dodge: boolean; skill: boolean; interact: boolean; viewport?: {width:number;height:number} };
 export const DODGE_COOLDOWN = 1.2;
 export const emptyInput = (): InputState => ({ move: { x: 0, y: 0 }, dodge: false, skill: false, interact: false });
-export type GameEvent = { kind: 'attack' | 'hit' | 'hurt' | 'dodge' | 'loot' | 'task' | 'room' | 'ability'; ability?:'arc'|'bell'|'sigil'; from?:Vec; radius?:number; text?: string; pos?: Vec; damage?: number; energy?: number };
+export type GameEvent = { kind: 'attack' | 'hit' | 'hurt' | 'dodge' | 'loot' | 'task' | 'room' | 'ability'; ability?:'arc'|'bell'|'sigil'|'lantern'; from?:Vec; radius?:number; text?: string; pos?: Vec; damage?: number; energy?: number };
 export type Interaction = { id: string; label: string; object?: WorldObject; locked?: string };
 export const enemyRadius = (e: Enemy, dungeonId: string) => enemyDefinition(dungeonId,e.kind).radius;
 
@@ -68,18 +68,27 @@ function spawnPlayerProjectile(s: GameState, skill: boolean, events: GameEvent[]
   const splash = skill && s.career === 'occultist' ? 1.25 : stats.splash;
   const effect = !skill ? 'none' : s.career === 'investigator' ? 'stun' : s.career === 'occultist' ? 'seal' : 'anchor';
   const rogue=run.rogue,level=skillLevel(s,mainSkill(s.career))||1,awake=rogue?.awakenings.includes(mainSkill(s.career));
-  const angles=awake?(s.career==='investigator'?[0,Math.PI/2,Math.PI,-Math.PI/2]:s.career==='harpooner'?[-.18,0,.18]:[0]):[0];
+  let angles=[0],damageScale=1;
+  if(rogue&&awake){
+    if(s.career==='investigator')angles=[-.12,0,.12,Math.PI/2,Math.PI,-Math.PI/2];
+    else if(s.career==='harpooner')angles=[-.18,0,.18];
+    else damageScale=2.2;
+  }else if(rogue&&s.career!=='harpooner'){
+    if(level>=5){angles=[-.12,0,.12];damageScale=.68;}
+    else if(level>=3){angles=[-.07,.07];damageScale=.72;}
+  }
+  const shotDamage=damage*damageScale;
   for(const offset of angles)battleWorld(run).projectiles.push({
     id: `player-${run.id}-${run.time}-${Math.random()}`,
     pos: { x: p.pos.x + Math.cos(p.angle) * 0.3, y: p.pos.y + Math.sin(p.angle) * 0.3 },
-    ...(rogue?{blastChain:!!awake&&s.career==='occultist',pierce:s.career==='harpooner'?1+Math.floor(level/2):awake?2:0,hits:[]}:{}), angle: Math.atan2(Math.sin(p.angle+offset),Math.cos(p.angle+offset)), life: Math.max(0,stats.range-.3) / stats.speed, damage, owner: 'player', speed: stats.speed,
+    ...(rogue?{blastChain:!!awake&&s.career==='occultist',pierce:s.career==='harpooner'?1+Math.floor(level/2):awake?2:0,hits:[]}:{}), angle: Math.atan2(Math.sin(p.angle+offset),Math.cos(p.angle+offset)), life: Math.max(0,stats.range-.3) / stats.speed, damage:shotDamage, owner: 'player', speed: stats.speed,
     splash:awake&&s.career==='occultist'?Math.min(2,splash*1.5):splash, weakpoint: skill && s.career === 'harpooner' ? 3.2 : stats.weakpoint, effect,
   });
   p.action = skill ? 'skill' : 'attack'; p.timer = 0; p.fireCd = stats.cooldown;
   events.push({ kind: 'attack' });
 }
 
-function resolveEnemyHit(s: GameState, e: Enemy, damage: number, pos: Vec, weakpoint: number, effect: Projectile['effect'], events: GameEvent[], critical: { value: boolean }) {
+function resolveEnemyHit(s: GameState, e: Enemy, damage: number, pos: Vec, weakpoint: number, effect: Projectile['effect']|'wave', events: GameEvent[], critical: { value: boolean }) {
   const run = s.run!, room = battleWorld(run), definition = dungeon(run.boss), bossConfig = definition.boss;
   const open = e.kind === 'guardian' && e.mode === 'recover';
   const crossedBossPhase = e.kind === 'guardian' && e.hp > bossHealth(run) * bossConfig.phaseAt;
@@ -92,7 +101,7 @@ function resolveEnemyHit(s: GameState, e: Enemy, damage: number, pos: Vec, weakp
   if (crossedBossPhase && e.hp > 0 && e.hp <= bossHealth(run) * bossConfig.phaseAt) events.push({ kind: 'task', text: `${definition.name}进入第二阶段，注意攻击预警。` });
   if (e.hp === 0) {
     if(!run.rogue)events.push({ kind: 'loot', energy: e.kind === 'guardian' ? bossConfig.rewards.energy : definition.minions[e.kind].energy });
-    else {run.rogue.research+=e.kind==='guardian'?40:1;if(e.elite){run.rogue.awakeTokens++;events.push({kind:'task',text:'精英已击败 · 获得一次觉醒机会'});}}
+    else {run.rogue.research=Math.min(1e9,run.rogue.research+(e.kind==='guardian'?40:1));if(e.elite){run.rogue.awakeTokens++;events.push({kind:'task',text:'精英已击败 · 获得一次觉醒机会'});}}
     e.timer = 0;
     if (e.kind === 'guardian') {
       const bossName = BOSSES[run.boss].name;
@@ -101,7 +110,7 @@ function resolveEnemyHit(s: GameState, e: Enemy, damage: number, pos: Vec, weakp
       room.drops.push({ id: `${e.id}-sample-drop`, pos: { x: e.pos.x - 0.45, y: e.pos.y }, material: 'crystal', amount: bossConfig.rewards.crystal, taken: false }, { id: `${e.id}-parts-drop`, pos: { x: e.pos.x + 0.45, y: e.pos.y }, material: 'iron', amount: bossConfig.rewards.iron, taken: false });
       if (quest) room.drops.push({ id: `${e.id}-quest-drop`, pos: { x: e.pos.x, y: e.pos.y + 0.7 }, quest, taken: false });
       winBattle(run);
-      events.push({ kind: 'task', text: `${bossName}已被击败，残敌退散。战利品已汇集，可安全撤离。` });
+      events.push({ kind: 'task', text: `${bossName}已被击败 · 调查胜利，正在结算。` });
     } else {
       if (e.kind === 'cultist') room.hazards = room.hazards.filter(h => !h.id.startsWith('spell-' + e.id + '-'));
       const minion = definition.minions[e.kind];
@@ -110,8 +119,8 @@ function resolveEnemyHit(s: GameState, e: Enemy, damage: number, pos: Vec, weakp
       const clearQuest = minion.clearQuest;
       if (clearQuest && s.quests.some(q => q.id === clearQuest && !q.ready)) run.progress[clearQuest] = Math.min(QUESTS[clearQuest].goal, (run.progress[clearQuest] ?? 0) + 1);
     }
-  } else if (e.kind !== 'guardian' && e.mode !== 'attack' && (effect === 'stun' || effect === 'seal' || effect === 'anchor')) {
-    if (effect === 'stun' || effect === 'seal') room.hazards = room.hazards.filter(h => !h.id.startsWith('spell-' + e.id + '-'));
+  } else if (e.kind !== 'guardian' && e.mode !== 'attack' && (effect === 'stun' || effect === 'seal' || effect === 'anchor' || effect === 'wave')) {
+    if (effect === 'stun' || effect === 'seal' || effect === 'wave') room.hazards = room.hazards.filter(h => !h.id.startsWith('spell-' + e.id + '-'));
     if (effect === 'anchor') {
       const pull = direction(e.pos, run.player.pos);
       moveBody(run.boss, e.pos, { x: Math.cos(pull) * 0.85, y: Math.sin(pull) * 0.85 }, enemyRadius(e,run.boss));
@@ -136,8 +145,8 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
   const waveUpdate=updateBattle(run,dt,input.viewport);
   critical.value=waveUpdate.changed;
   if(run.rogue){
-    const r=run.rogue,paid=Math.min(4,Math.max(0,run.battle!.wave-1));
-    while(r.wavePaid<paid){r.gold+=[5,10,15,25][r.wavePaid++];if(r.wavePaid===1&&!s.research!.inventory.includes('pocket_compass')&&!r.equipment.includes('pocket_compass'))r.equipment.push('pocket_compass');}
+    const r=run.rogue,paid=Math.min(combatWaves(run).length-1,Math.max(0,run.battle!.wave-1));
+    while(r.wavePaid<paid){r.gold=Math.min(1e9,r.gold+[5,10,15,25][r.wavePaid++]);if(r.wavePaid===1&&!s.research!.inventory.includes('pocket_compass')&&!r.equipment.includes('pocket_compass'))r.equipment.push('pocket_compass');}
   }
   for(const text of waveUpdate.messages)events.push({kind:'room',text});
   for (const enemy of room.enemies) if (enemy.hp===0) enemy.timer+=dt;
@@ -169,7 +178,7 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
     spawnPlayerProjectile(s, false, events, input.viewport);
   }
 
-  if(!run.battle!.won)tickAutoSkills(s,dt,(enemy,damage)=>{if(enemy.hp>0&&!run.battle!.won)resolveEnemyHit(s,enemy,damage,enemy.pos,1.8,'none',events,critical);},event=>events.push(event),input.viewport);
+  if(!run.battle!.won)tickAutoSkills(s,dt,(enemy,damage,effect)=>{if(enemy.hp>0&&!run.battle!.won)resolveEnemyHit(s,enemy,damage,enemy.pos,1.8,effect??'none',events,critical);},event=>events.push(event),input.viewport);
 
   const damageToPlayer: { damage: number; name: string; pos: Vec }[] = [];
   let meleeBusy = room.enemies.filter(e => e.hp > 0 && e.kind === 'beast' && (e.mode === 'windup' || e.mode === 'attack')).length;
@@ -187,7 +196,9 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
     e.timer += dt;
     if (e.mode === 'idle') { e.mode='chase';e.timer=0; }
     else if (e.mode === 'chase') {
-      const bossRange=e.turn===0&&e.timer<4?4.5:9;
+      const closeRange=run.rogue?.pacingVersion===2?Math.min(4.5,careerStats(s).range+.3):4.5;
+      const approachTime=run.rogue?.pacingVersion===2?(e.turn===0?4:1.2):4;
+      const bossRange=(run.rogue?.pacingVersion===2||e.turn===0)&&e.timer<approachTime?closeRange:9;
       if (sight && ((e.kind !== 'guardian' && d <= stats!.range && (e.kind !== 'beast' || meleeBusy<2) && (e.kind !== 'cultist' || magicBusy<2)) || (e.kind === 'guardian' && d <= bossRange))) {
         e.mode = 'windup'; e.timer = 0; e.angle = direction(e.pos, p.pos); e.hit = false;
         if (e.kind === 'beast') meleeBusy++;
@@ -198,7 +209,7 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
         }
       } else if (e.kind === 'guardian') {
         const a=pathDirection(run.boss,e.pos,p.pos,enemyRadius(e,run.boss));
-        if(a!==null&&(!sight||d>bossRange))moveBody(run.boss,e.pos,{x:Math.cos(a)*dt,y:Math.sin(a)*dt},enemyRadius(e,run.boss));
+        if(a!==null&&(!sight||d>bossRange))moveBody(run.boss,e.pos,{x:Math.cos(a)*dt*(run.rogue?.pacingVersion===2?1.5:1),y:Math.sin(a)*dt*(run.rogue?.pacingVersion===2?1.5:1)},enemyRadius(e,run.boss));
       } else {
         const ranged = e.kind === 'bug' || e.kind === 'cultist';
         const speed = stats!.speed;
@@ -240,6 +251,7 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
         if (target) {
           resolveEnemyHit(s, target, bullet.damage, target.pos, bullet.weakpoint, bullet.effect, events, critical);
           if (bullet.splash > 0) {
+            events.push({kind:'ability',ability:'sigil',pos:{...target.pos},radius:bullet.splash});
             for (const other of room.enemies.filter(e => e.hp > 0 && e.id !== target.id && distance(e.pos, target.pos) <= bullet.splash + enemyRadius(e,run.boss) && lineClear(run.boss,target.pos,e.pos,.08)))
               resolveEnemyHit(s, other, bullet.damage * .6, other.pos, bullet.weakpoint, bullet.effect, events, critical);
           }
@@ -279,11 +291,17 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
     moveBody(run.boss, p.pos, { x: Math.cos(a) * 0.4, y: Math.sin(a) * 0.4 }, 0.22);
     events.push({ kind: 'hurt', damage: hit.damage }); critical.value = true;
   }
+  let collectedSoul=false;
   for (const drop of room.drops) {
     if (drop.taken || distance(p.pos, drop.pos) > (run.rogue?pickupRadius(s):.65) || (run.rogue&&!lineClear(run.boss,p.pos,drop.pos))) continue;
+    if(run.rogue?.pacingVersion===2&&drop.xp&&!run.battle!.won){
+      const d=distance(p.pos,drop.pos),step=Math.min(d,8*dt);
+      if(d>.45){drop.pos.x+=(p.pos.x-drop.pos.x)*step/d;drop.pos.y+=(p.pos.y-drop.pos.y)*step/d;}
+      if(distance(p.pos,drop.pos)>.45)continue;
+    }
     drop.taken = true;
-    if(run.rogue&&drop.xp&&p.hp>0&&!run.battle!.won)addLocalXp(run.rogue,drop.xp);
-    if (drop.material && drop.amount) run.materials[drop.material] += drop.amount;
+    if(run.rogue&&drop.xp&&p.hp>0&&!run.battle!.won){addLocalXp(run.rogue,drop.xp);collectedSoul=true;}
+    if (drop.material && drop.amount) run.materials[drop.material] = Math.min(1e9,run.materials[drop.material] + drop.amount);
     if (drop.quest && s.quests.some(q => q.id === drop.quest && !q.ready) && (run.progress[drop.quest] ?? 0) < QUESTS[drop.quest].goal) {
       run.progress[drop.quest] = Math.min(QUESTS[drop.quest].goal, (run.progress[drop.quest] ?? 0) + 1);
       events.push({ kind: 'task', text: `${QUESTS[drop.quest].title}证物已回收，撤离后生效。` });
@@ -291,6 +309,7 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
     if (drop.material && drop.amount) events.push({ kind: 'loot', text: `${MATERIAL_NAMES[drop.material]} +${drop.amount}` });
     critical.value = true;
   }
+  if(collectedSoul)events.push({kind:'loot'});
   const target = nearbyInteraction(s);
   if (input.interact && target?.object?.kind === 'survey' && p.action !== 'hurt') {
     run.survey += dt;
@@ -302,7 +321,7 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
     if (levels > 0 && p.hp > 0) events.push({ kind: 'task', text: `升至 Lv.${experience(s).level} · 生命上限与伤害提升` });
     critical.value = true;
   }
-  if(run.rogue&&run.battle!.won&&run.rogue.wavePaid<5){run.rogue.gold+=45;run.rogue.wavePaid=5;run.rogue.fields=[];run.rogue.offers=[];critical.value=true;}
+  if(awardBossVictory(run))critical.value=true;
   room.drops=room.drops.filter(d=>!d.taken);
   room.enemies=room.enemies.filter(e=>e.hp>0||e.timer<.45);
   return { events, dead: p.hp <= 0, critical: critical.value };

@@ -5,8 +5,9 @@ import { distance, isFree, nearestFreePoint, pathDirection } from './geometry.ts
 
 export const emptyRoom=(id:number):Room=>({id,enemies:[],objects:[],drops:[],hazards:[],projectiles:[],visited:true,grace:0,encounter:'pending',wave:0,waveDelay:0});
 export const battleWorld=(run:Run):Room=>run.world??run.rooms[run.room];
-export const combatWaves=(run:Run)=>{const c=dungeon(run.boss).combat;return run.rogue&&c.rogueWaves?c.rogueWaves:c.waves;};
-export const bossHealth=(run:Run)=>{const d=dungeon(run.boss);return run.rogue?(d.combat.rogueBossHealth??d.boss.hp):d.boss.hp;};
+export const combatWaves=(run:Run)=>{const c=dungeon(run.boss).combat;return run.rogue?(run.rogue.pacingVersion===2?c.rogueWaves??c.waves:c.legacyRogueWaves??c.rogueWaves??c.waves):c.waves;};
+export const bossHealth=(run:Run)=>{const d=dungeon(run.boss);return run.rogue?(run.rogue.pacingVersion===2?d.combat.rogueBossHealth??d.boss.hp:d.combat.legacyRogueBossHealth??d.combat.rogueBossHealth??d.boss.hp):d.boss.hp;};
+export const enemyHealth=(run:Run,kind:Enemy['kind'],elite=false)=>{const d=enemyDefinition(run.boss,kind);return kind==='guardian'?bossHealth(run):((run.rogue?.pacingVersion===2&&'rogueHp' in d?d.rogueHp:undefined)??d.hp)*(elite?2:1);};
 export const aliveEnemies=(run:Run)=>battleWorld(run).enemies.filter(e=>e.hp>0);
 
 // Upgrade old in-flight saves without clearing the character, loot or quests.
@@ -75,11 +76,11 @@ export function updateBattle(run:Run,dt:number,viewport={width:360,height:640}):
           const id=`timed-${run.id}-${waveIndex}-${batch}-${kind}-${i}`,index=state.pending.length+waveIndex*3+batch*4;
           const at=spawnPoint(run,index,kind,viewport);
           const queued=!!run.rogue&&(!at||(kind!=='guardian'&&world.enemies.filter(e=>e.hp>0).length+state.pending.filter(p=>!p.queued).length>=90));
-          const elite=!!run.rogue&&waveIndex>=2&&kind==='cultist'&&i===0&&batch===Math.ceil(wave.batches/wave.enemies.cultist)-1;
+          const elite=!!run.rogue&&i===0&&(run.rogue.pacingVersion===2?kind==='beast'&&waveIndex<2&&batch===(waveIndex===0?4:3):waveIndex>=2&&kind==='cultist'&&batch===Math.ceil(wave.batches/wave.enemies.cultist)-1);
           state.pending.push({...(run.rogue?{queued,elite}:{}),id,kind,pos:at?.pos??{...run.player.pos},side:at?.side??'north',remaining:definition.combat.warning});
         }
       }
-      if(batch===0)messages.push(waveIndex===4?`${definition.name}正在显现！`:`第 ${waveIndex+1} / 5 阶段 · 敌群持续来袭`);
+      if(batch===0)messages.push(waveIndex===waves.length-1?`${definition.name}正在显现！`:`第 ${waveIndex+1} / ${waves.length} 阶段 · 敌群持续来袭`);
       changed=true;
     }
   }
@@ -100,7 +101,7 @@ export function updateBattle(run:Run,dt:number,viewport={width:360,height:640}):
       if(at){pending.pos=at.pos;pending.side=at.side;}else if(run.rogue)pending.queued=true;pending.remaining=definition.combat.warning;retained.push(pending);changed=true;continue;
     }
     const pos={...pending.pos};
-    world.enemies.push({id:pending.id,kind:pending.kind,pos,home:{...pos},hp:pending.kind==='guardian'?bossHealth(run):enemyDefinition(run.boss,pending.kind).hp*(pending.elite?2:1),...(pending.elite?{elite:true}:{}),mode:'chase',timer:0,angle:Math.PI/2,turn:0,hit:false,flash:0,lost:0});changed=true;
+    world.enemies.push({id:pending.id,kind:pending.kind,pos,home:{...pos},hp:enemyHealth(run,pending.kind,pending.elite),...(pending.elite?{elite:true}:{}),mode:'chase',timer:0,angle:Math.PI/2,turn:0,hit:false,flash:0,lost:0});changed=true;
   }
   state.pending=retained;
   return {changed,messages};
