@@ -50,7 +50,7 @@ test('新增副本 id、攻击参数与奖励无需扩展白名单',()=>{
 });
 test('各副本第二阶段落点使用配置且位于当前交战区',()=>{
   for(const d of DUNGEONS){const s=bossRun(d.id),r=s.run!,world=battleWorld(r),boss=aliveEnemies(r)[0],ground=d.boss.attacks[0];if(ground.type!=='ground')continue;
-    world.hazards=[];r.player.fireCd=2;boss.mode='chase';boss.hp=d.boss.hp*d.boss.phaseAt;tick(s,emptyInput(),.01);
+    world.hazards=[];r.player.fireCd=2;boss.pos={x:r.player.pos.x+2,y:r.player.pos.y};boss.mode='chase';boss.hp=d.boss.hp*d.boss.phaseAt;tick(s,emptyInput(),.01);
     assert.equal(world.hazards.length,ground.phaseTwoOffsets.length);assert.ok(world.hazards.every(h=>h.damage===ground.damage&&h.pos.y>0&&h.pos.y<d.arena.height));assert.ok(validState(s));}
 });
 test('失败仍丢失未撤离战利品和新任务进度',()=>{const s=investigation();s.run!.materials.crystal=9;s.run!.progress.K1=1;finishRun(s,false);assert.equal(s.materials.crystal,0);assert.equal(s.quests[0].progress,0);assert.ok(validState(s));});

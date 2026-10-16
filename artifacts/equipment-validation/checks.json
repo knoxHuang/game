@@ -1,0 +1,41 @@
+[
+  {
+    "width": 320,
+    "height": 480,
+    "uiUpgrade": true,
+    "equipSwap": true,
+    "reloadPreserved": true,
+    "emptyArmorBase": true,
+    "careerPreviews": 3,
+    "systemReduced": true,
+    "gameReduced": true,
+    "buttonsAtLeast48": true,
+    "pageErrors": []
+  },
+  {
+    "width": 360,
+    "height": 640,
+    "uiUpgrade": true,
+    "equipSwap": true,
+    "reloadPreserved": true,
+    "emptyArmorBase": true,
+    "careerPreviews": 3,
+    "systemReduced": true,
+    "gameReduced": true,
+    "buttonsAtLeast48": true,
+    "pageErrors": []
+  },
+  {
+    "width": 414,
+    "height": 896,
+    "uiUpgrade": true,
+    "equipSwap": true,
+    "reloadPreserved": true,
+    "emptyArmorBase": true,
+    "careerPreviews": 3,
+    "systemReduced": true,
+    "gameReduced": true,
+    "buttonsAtLeast48": true,
+    "pageErrors": []
+  }
+]

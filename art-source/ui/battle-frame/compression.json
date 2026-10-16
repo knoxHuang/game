@@ -1,0 +1,35 @@
+{
+  "source": "master.png",
+  "sourceBytes": 2642873,
+  "width": 1536,
+  "height": 1024,
+  "tool": "Sharp extract (no resize), cwebp -lossless -exact -m 6",
+  "exports": [
+    {
+      "file": "battle-status.webp",
+      "region": {
+        "left": 0,
+        "top": 0,
+        "width": 1536,
+        "height": 340
+      },
+      "pngBytes": 1299610,
+      "webpBytes": 809474,
+      "rgbaEqual": true,
+      "dimensionsEqual": true
+    },
+    {
+      "file": "battle-dock.webp",
+      "region": {
+        "left": 0,
+        "top": 608,
+        "width": 1536,
+        "height": 416
+      },
+      "pngBytes": 1573866,
+      "webpBytes": 974186,
+      "rgbaEqual": true,
+      "dimensionsEqual": true
+    }
+  ]
+}

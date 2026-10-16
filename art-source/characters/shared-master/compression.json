@@ -1,0 +1,38 @@
+[
+  {
+    "source": "body.png",
+    "runtime": "linjin-base.png",
+    "tool": "Pillow 12.3.0 PNG optimize=True compress_level=9",
+    "before": 680559,
+    "after": 640500,
+    "rgba_identical": true,
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "source": "coat.png",
+    "runtime": "raincoat-layer.png",
+    "tool": "Pillow 12.3.0 PNG optimize=True compress_level=9",
+    "before": 418654,
+    "after": 385119,
+    "rgba_identical": true,
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "source": "grip.png",
+    "runtime": "raincoat-grip.png",
+    "tool": "Pillow 12.3.0 PNG optimize=True compress_level=9",
+    "before": 26380,
+    "after": 25202,
+    "rgba_identical": true,
+    "dimensions": [
+      1024,
+      1536
+    ]
+  }
+]

@@ -1,7 +1,12 @@
 import type { GameState } from './model.ts';
+import { characterPaperdoll } from './character-art.ts';
 import { CAREERS, maxHealth, careerStats } from './model.ts';
 import { EQUIPMENT, EQUIPMENT_UPGRADES, SKILLS } from './roguelite.ts';
-import type { SkillId } from './roguelite.ts';
+import type { EquipmentId, SkillId } from './roguelite.ts';
+const equipmentImages: Partial<Record<EquipmentId, string>> = {
+  diving_coat: '/assets/equipment/diving-coat-icon.png',
+  brass_revolver: '/assets/equipment/brass-revolver-icon.png',
+};
 const btn=(action:string,label:string,value='',disabled=false)=>`<button class="button button-secondary" data-action="${action}" data-value="${value}"${disabled?' disabled':''}>${label}</button>`;
 const art=(key:string,icon:(key:string)=>string)=>`<img src="${icon(key)}" alt="">`;
 const choiceDetails:Record<SkillId,string>={revolver:'提高单发伤害，缩短攻击间隔。',sigil:'提高符弹伤害，扩大爆炸范围。',harpoon:'提高伤害；第3、5阶增加贯穿。',lantern:'自动灼烧近身敌人，提高伤害与半径。',arc:'提高电弧伤害，增加跳跃目标。',tide:'生成持续伤害符阵，提高伤害与范围。',bell:'提高冲击伤害，扩大震荡范围。',magazine:'全部伤害 +12%。',compass:'收集半径 +0.55，移速 +5%。',watch:'全部自动攻击间隔缩短 8%。',lining:'生命上限 +15，并恢复新增生命。',coil:'全部范围攻击半径 +12%。'};
@@ -21,5 +26,5 @@ export function renderResearch(s:GameState){
 }
 export function renderRogueEquipment(s:GameState,icon:(key:string)=>string){
   const r=s.research!,stats=careerStats(s);
-  return `<div class="loadout-identity"><strong>林烬 · ${CAREERS[s.career].name}</strong><span>出发从 Lv.1 开始 · 自动攻击</span></div><div class="rogue-loadout-person"><img src="/assets/character/linjin-base.png" alt="林烬"><img src="/assets/character/raincoat-layer.png" alt="黄色雨衣"></div><dl class="loadout-stats"><div><dt>最大生命</dt><dd>${maxHealth(s)}</dd></div><div><dt>初始伤害</dt><dd>${stats.damage.toFixed(1)}</dd></div><div><dt>攻击间隔</dt><dd>${stats.cooldown.toFixed(2)}s</dd></div></dl><p class="loadout-hint">武器、护具、饰物：固定效果，可确定强化。</p>${(['weapon','armor','charm'] as const).map(slot=>`<section class="equipment-service"><h3>${{weapon:'武器',armor:'护具',charm:'饰物'}[slot]}</h3>${r.inventory.filter(id=>EQUIPMENT[id].slot===slot).map(id=>{const item=EQUIPMENT[id],selected=r.equipped[slot]===id;return `<div class="rogue-equipment"><span class="rogue-choice-icon">${art(slot==='weapon'?'weapon':slot==='armor'?'armor':'compass',icon)}</span><strong>${item.name}</strong><p>${item.detail}</p>${btn('equip-rogue',selected?'已装备':'装备',id,selected||!!s.run)}${EQUIPMENT_UPGRADES[id]&&!r.inventory.includes(EQUIPMENT_UPGRADES[id]!)?`<p>强化：35 冥币 / 25 研究能量 / 2 零件</p>${btn('improve-equipment','强化装备',id,!!s.run||s.gold<35||r.energy<25||s.materials.iron<2)}`:''}</div>`;}).join('')||'<p>撑过第一波可获得袖珍罗盘，结算后入库。</p>'}</section>`).join('')}${renderResearch(s)}`;
+  return `<div class="loadout-identity"><strong>林烬 · ${CAREERS[s.career].name}</strong><span>出发从 Lv.1 开始 · 自动攻击</span></div><div class="rogue-loadout-person">${characterPaperdoll(!!r.equipped.armor,r.equipped.armor==='diving_coat')}</div><dl class="loadout-stats"><div><dt>最大生命</dt><dd>${maxHealth(s)}</dd></div><div><dt>初始伤害</dt><dd>${stats.damage.toFixed(1)}</dd></div><div><dt>攻击间隔</dt><dd>${stats.cooldown.toFixed(2)}s</dd></div></dl><p class="loadout-hint">武器、护具、饰物：固定效果，可确定强化。</p>${(['weapon','armor','charm'] as const).map(slot=>`<section class="equipment-service"><h3>${{weapon:'武器',armor:'护具',charm:'饰物'}[slot]}</h3>${r.inventory.filter(id=>EQUIPMENT[id].slot===slot).map(id=>{const item=EQUIPMENT[id],selected=r.equipped[slot]===id;return `<div class="rogue-equipment"><span class="rogue-choice-icon">${equipmentImages[id]?`<img src="${equipmentImages[id]}" alt="">`:art(slot==='weapon'?'weapon':slot==='armor'?'armor':'compass',icon)}</span><strong>${item.name}</strong><p>${item.detail}</p>${btn('equip-rogue',selected?'已装备':'装备',id,selected||!!s.run)}${EQUIPMENT_UPGRADES[id]&&!r.inventory.includes(EQUIPMENT_UPGRADES[id]!)?`<p>强化：35 冥币 / 25 研究能量 / 2 零件</p>${btn('improve-equipment','强化装备',id,!!s.run||s.gold<35||r.energy<25||s.materials.iron<2)}`:''}</div>`;}).join('')||'<p>撑过第一波可获得袖珍罗盘，结算后入库。</p>'}</section>`).join('')}${renderResearch(s)}`;
 }

@@ -1,0 +1,35 @@
+[
+  {
+    "width": 320,
+    "height": 480,
+    "renderedLayers": true,
+    "fullFigureVisible": true,
+    "legacyWearRemove": true,
+    "careerPreviews": 3,
+    "gameReduced": true,
+    "systemReduced": true,
+    "pageErrors": []
+  },
+  {
+    "width": 360,
+    "height": 640,
+    "renderedLayers": true,
+    "fullFigureVisible": true,
+    "legacyWearRemove": true,
+    "careerPreviews": 3,
+    "gameReduced": true,
+    "systemReduced": true,
+    "pageErrors": []
+  },
+  {
+    "width": 414,
+    "height": 896,
+    "renderedLayers": true,
+    "fullFigureVisible": true,
+    "legacyWearRemove": true,
+    "careerPreviews": 3,
+    "gameReduced": true,
+    "systemReduced": true,
+    "pageErrors": []
+  }
+]

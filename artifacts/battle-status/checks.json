@@ -1,0 +1,1072 @@
+{
+  "results": [
+    {
+      "width": 320,
+      "height": 480,
+      "kind": "normal",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 80,
+        "top": 0,
+        "right": 320,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 270,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 318,
+        "bottom": 66,
+        "left": 270
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 166.40625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 224,
+            "bottom": 456.8125,
+            "left": 166.40625
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 240.015625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 297.609375,
+            "bottom": 456.8125,
+            "left": 240.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "kind": "full",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 80,
+        "top": 0,
+        "right": 320,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 270,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 318,
+        "bottom": 66,
+        "left": 270
+      },
+      "waveFits": true,
+      "hp": "110",
+      "slots": [
+        {
+          "rect": {
+            "x": 166.40625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 224,
+            "bottom": 456.8125,
+            "left": 166.40625
+          },
+          "label": "生命已满，急救包1个",
+          "disabled": true
+        },
+        {
+          "rect": {
+            "x": 240.015625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 297.609375,
+            "bottom": 456.8125,
+            "left": 240.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "kind": "critical",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 80,
+        "top": 0,
+        "right": 320,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 270,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 318,
+        "bottom": 66,
+        "left": 270
+      },
+      "waveFits": true,
+      "hp": "25",
+      "slots": [
+        {
+          "rect": {
+            "x": 166.40625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 224,
+            "bottom": 456.8125,
+            "left": 166.40625
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 240.015625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 297.609375,
+            "bottom": 456.8125,
+            "left": 240.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "kind": "boss",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 80,
+        "top": 0,
+        "right": 320,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 270,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 318,
+        "bottom": 66,
+        "left": 270
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 166.40625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 224,
+            "bottom": 456.8125,
+            "left": 166.40625
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 240.015625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 297.609375,
+            "bottom": 456.8125,
+            "left": 240.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "kind": "boss-phase2",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 80,
+        "top": 0,
+        "right": 320,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 270,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 318,
+        "bottom": 66,
+        "left": 270
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 166.40625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 224,
+            "bottom": 456.8125,
+            "left": 166.40625
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 240.015625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 297.609375,
+            "bottom": 456.8125,
+            "left": 240.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "kind": "reduced",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 80,
+        "top": 0,
+        "right": 320,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 270,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 318,
+        "bottom": 66,
+        "left": 270
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 166.40625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 224,
+            "bottom": 456.8125,
+            "left": 166.40625
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 240.015625,
+            "y": 399.21875,
+            "width": 57.59375,
+            "height": 57.59375,
+            "top": 399.21875,
+            "right": 297.609375,
+            "bottom": 456.8125,
+            "left": 240.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "kind": "normal",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 80,
+        "top": 0,
+        "right": 360,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 310,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 358,
+        "bottom": 66,
+        "left": 310
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 187.21875,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 252.015625,
+            "bottom": 618.40625,
+            "left": 187.21875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 270.015625,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 334.8125,
+            "bottom": 618.40625,
+            "left": 270.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "kind": "full",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 80,
+        "top": 0,
+        "right": 360,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 310,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 358,
+        "bottom": 66,
+        "left": 310
+      },
+      "waveFits": true,
+      "hp": "110",
+      "slots": [
+        {
+          "rect": {
+            "x": 187.21875,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 252.015625,
+            "bottom": 618.40625,
+            "left": 187.21875
+          },
+          "label": "生命已满，急救包1个",
+          "disabled": true
+        },
+        {
+          "rect": {
+            "x": 270.015625,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 334.8125,
+            "bottom": 618.40625,
+            "left": 270.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "kind": "critical",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 80,
+        "top": 0,
+        "right": 360,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 310,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 358,
+        "bottom": 66,
+        "left": 310
+      },
+      "waveFits": true,
+      "hp": "25",
+      "slots": [
+        {
+          "rect": {
+            "x": 187.21875,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 252.015625,
+            "bottom": 618.40625,
+            "left": 187.21875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 270.015625,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 334.8125,
+            "bottom": 618.40625,
+            "left": 270.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "kind": "boss",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 80,
+        "top": 0,
+        "right": 360,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 310,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 358,
+        "bottom": 66,
+        "left": 310
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 187.21875,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 252.015625,
+            "bottom": 618.40625,
+            "left": 187.21875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 270.015625,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 334.8125,
+            "bottom": 618.40625,
+            "left": 270.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "kind": "boss-phase2",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 80,
+        "top": 0,
+        "right": 360,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 310,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 358,
+        "bottom": 66,
+        "left": 310
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 187.21875,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 252.015625,
+            "bottom": 618.40625,
+            "left": 187.21875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 270.015625,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 334.8125,
+            "bottom": 618.40625,
+            "left": 270.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "kind": "reduced",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 80,
+        "top": 0,
+        "right": 360,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 310,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 358,
+        "bottom": 66,
+        "left": 310
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 187.21875,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 252.015625,
+            "bottom": 618.40625,
+            "left": 187.21875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 270.015625,
+            "y": 553.609375,
+            "width": 64.796875,
+            "height": 64.796875,
+            "top": 553.609375,
+            "right": 334.8125,
+            "bottom": 618.40625,
+            "left": 270.015625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 414,
+      "height": 896,
+      "kind": "normal",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 414,
+        "height": 80,
+        "top": 0,
+        "right": 414,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 364,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 412,
+        "bottom": 66,
+        "left": 364
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 215.296875,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 289.8125,
+            "bottom": 871.171875,
+            "left": 215.296875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 310.515625,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 385.03125,
+            "bottom": 871.171875,
+            "left": 310.515625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 414,
+      "height": 896,
+      "kind": "full",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 414,
+        "height": 80,
+        "top": 0,
+        "right": 414,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 364,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 412,
+        "bottom": 66,
+        "left": 364
+      },
+      "waveFits": true,
+      "hp": "110",
+      "slots": [
+        {
+          "rect": {
+            "x": 215.296875,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 289.8125,
+            "bottom": 871.171875,
+            "left": 215.296875
+          },
+          "label": "生命已满，急救包1个",
+          "disabled": true
+        },
+        {
+          "rect": {
+            "x": 310.515625,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 385.03125,
+            "bottom": 871.171875,
+            "left": 310.515625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 414,
+      "height": 896,
+      "kind": "critical",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 414,
+        "height": 80,
+        "top": 0,
+        "right": 414,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 364,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 412,
+        "bottom": 66,
+        "left": 364
+      },
+      "waveFits": true,
+      "hp": "25",
+      "slots": [
+        {
+          "rect": {
+            "x": 215.296875,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 289.8125,
+            "bottom": 871.171875,
+            "left": 215.296875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 310.515625,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 385.03125,
+            "bottom": 871.171875,
+            "left": 310.515625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 414,
+      "height": 896,
+      "kind": "boss",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 414,
+        "height": 80,
+        "top": 0,
+        "right": 414,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 364,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 412,
+        "bottom": 66,
+        "left": 364
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 215.296875,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 289.8125,
+            "bottom": 871.171875,
+            "left": 215.296875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 310.515625,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 385.03125,
+            "bottom": 871.171875,
+            "left": 310.515625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 414,
+      "height": 896,
+      "kind": "boss-phase2",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 414,
+        "height": 80,
+        "top": 0,
+        "right": 414,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 364,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 412,
+        "bottom": 66,
+        "left": 364
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 215.296875,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 289.8125,
+            "bottom": 871.171875,
+            "left": 215.296875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 310.515625,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 385.03125,
+            "bottom": 871.171875,
+            "left": 310.515625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    },
+    {
+      "width": 414,
+      "height": 896,
+      "kind": "reduced",
+      "hud": {
+        "x": 0,
+        "y": 0,
+        "width": 414,
+        "height": 80,
+        "top": 0,
+        "right": 414,
+        "bottom": 80,
+        "left": 0
+      },
+      "pause": {
+        "x": 364,
+        "y": 18,
+        "width": 48,
+        "height": 48,
+        "top": 18,
+        "right": 412,
+        "bottom": 66,
+        "left": 364
+      },
+      "waveFits": true,
+      "hp": "100",
+      "slots": [
+        {
+          "rect": {
+            "x": 215.296875,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 289.8125,
+            "bottom": 871.171875,
+            "left": 215.296875
+          },
+          "label": "使用急救包，恢复40生命，剩余1个",
+          "disabled": false
+        },
+        {
+          "rect": {
+            "x": 310.515625,
+            "y": 796.65625,
+            "width": 74.515625,
+            "height": 74.515625,
+            "top": 796.65625,
+            "right": 385.03125,
+            "bottom": 871.171875,
+            "left": 310.515625
+          },
+          "label": "闪避，可用",
+          "disabled": false
+        }
+      ],
+      "background": "none"
+    }
+  ],
+  "errors": [],
+  "actions": [
+    "pulse:potion",
+    "pulse:dodge",
+    "move",
+    "move",
+    "move",
+    "pause",
+    "resume",
+    "pulse:potion",
+    "pulse:dodge",
+    "move",
+    "move",
+    "move",
+    "pause",
+    "resume",
+    "pulse:potion",
+    "pulse:dodge",
+    "move",
+    "move",
+    "move",
+    "pause",
+    "resume"
+  ]
+}

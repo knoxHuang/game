@@ -1,0 +1,10 @@
+{
+  "tool": "Pillow 12.3.0 PNG optimize=True compress_level=9",
+  "before": 1315708,
+  "after": 1174015,
+  "size": [
+    1024,
+    1536
+  ],
+  "rgbaIdentical": true
+}

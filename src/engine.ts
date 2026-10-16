@@ -8,6 +8,7 @@ import type { Enemy, GameState, Projectile, Vec, WorldObject } from './model.ts'
 import { direction, distance, isFree, lineClear, moveBody, pathDirection } from './geometry.ts';
 
 export type InputState = { move: Vec; dodge: boolean; skill: boolean; interact: boolean; viewport?: {width:number;height:number} };
+export const DODGE_COOLDOWN = 1.2;
 export const emptyInput = (): InputState => ({ move: { x: 0, y: 0 }, dodge: false, skill: false, interact: false });
 export type GameEvent = { kind: 'attack' | 'hit' | 'hurt' | 'dodge' | 'loot' | 'task' | 'room' | 'ability'; ability?:'arc'|'bell'|'sigil'; from?:Vec; radius?:number; text?: string; pos?: Vec; damage?: number; energy?: number };
 export type Interaction = { id: string; label: string; object?: WorldObject; locked?: string };
@@ -31,7 +32,7 @@ export function nearbyInteraction(s: GameState): Interaction | null {
   return null;
 }
 
-export function targetableEnemy(s: GameState, range = 7, viewport = {width:360,height:640}): Enemy | null {
+export function targetableEnemy(s: GameState, range = careerStats(s).range, viewport = {width:360,height:640}): Enemy | null {
   const run = s.run;
   if (!run) return null;
   const p = run.player;
@@ -71,7 +72,7 @@ function spawnPlayerProjectile(s: GameState, skill: boolean, events: GameEvent[]
   for(const offset of angles)battleWorld(run).projectiles.push({
     id: `player-${run.id}-${run.time}-${Math.random()}`,
     pos: { x: p.pos.x + Math.cos(p.angle) * 0.3, y: p.pos.y + Math.sin(p.angle) * 0.3 },
-    ...(rogue?{blastChain:!!awake&&s.career==='occultist',pierce:s.career==='harpooner'?1+Math.floor(level/2):awake?2:0,hits:[]}:{}), angle: Math.atan2(Math.sin(p.angle+offset),Math.cos(p.angle+offset)), life: stats.range / stats.speed, damage, owner: 'player', speed: stats.speed,
+    ...(rogue?{blastChain:!!awake&&s.career==='occultist',pierce:s.career==='harpooner'?1+Math.floor(level/2):awake?2:0,hits:[]}:{}), angle: Math.atan2(Math.sin(p.angle+offset),Math.cos(p.angle+offset)), life: Math.max(0,stats.range-.3) / stats.speed, damage, owner: 'player', speed: stats.speed,
     splash:awake&&s.career==='occultist'?Math.min(2,splash*1.5):splash, weakpoint: skill && s.career === 'harpooner' ? 3.2 : stats.weakpoint, effect,
   });
   p.action = skill ? 'skill' : 'attack'; p.timer = 0; p.fireCd = stats.cooldown;
@@ -146,7 +147,7 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
   if (strength > 0.05) p.facing = Math.atan2(input.move.y, input.move.x);
   let usedSkill = false;
   if (input.dodge && p.dodgeCd === 0 && p.action !== 'dodge') {
-    p.action = 'dodge'; p.timer = 0; p.angle = p.facing; p.dodgeCd = 1.2; p.invincible = Math.max(p.invincible, 0.28);
+    p.action = 'dodge'; p.timer = 0; p.angle = p.facing; p.dodgeCd = DODGE_COOLDOWN; p.invincible = Math.max(p.invincible, 0.28);
     events.push({ kind: 'dodge' });
   } else if (!run.rogue && input.skill && s.skill && p.skillCd === 0) {
     spawnPlayerProjectile(s, true, events, input.viewport); p.skillCd = 6; usedSkill = true;
@@ -168,7 +169,7 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
     spawnPlayerProjectile(s, false, events, input.viewport);
   }
 
-  if(!run.battle!.won)tickAutoSkills(s,dt,(enemy,damage)=>{if(enemy.hp>0&&!run.battle!.won)resolveEnemyHit(s,enemy,damage,enemy.pos,1.8,'none',events,critical);},event=>events.push(event));
+  if(!run.battle!.won)tickAutoSkills(s,dt,(enemy,damage)=>{if(enemy.hp>0&&!run.battle!.won)resolveEnemyHit(s,enemy,damage,enemy.pos,1.8,'none',events,critical);},event=>events.push(event),input.viewport);
 
   const damageToPlayer: { damage: number; name: string; pos: Vec }[] = [];
   let meleeBusy = room.enemies.filter(e => e.hp > 0 && e.kind === 'beast' && (e.mode === 'windup' || e.mode === 'attack')).length;
@@ -186,7 +187,8 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
     e.timer += dt;
     if (e.mode === 'idle') { e.mode='chase';e.timer=0; }
     else if (e.mode === 'chase') {
-      if (sight && ((e.kind !== 'guardian' && d <= stats!.range && (e.kind !== 'beast' || meleeBusy<2) && (e.kind !== 'cultist' || magicBusy<2)) || (e.kind === 'guardian' && d <= 9))) {
+      const bossRange=e.turn===0&&e.timer<4?4.5:9;
+      if (sight && ((e.kind !== 'guardian' && d <= stats!.range && (e.kind !== 'beast' || meleeBusy<2) && (e.kind !== 'cultist' || magicBusy<2)) || (e.kind === 'guardian' && d <= bossRange))) {
         e.mode = 'windup'; e.timer = 0; e.angle = direction(e.pos, p.pos); e.hit = false;
         if (e.kind === 'beast') meleeBusy++;
         if (e.kind === 'cultist') { magicBusy++; room.hazards.push({ id: 'spell-' + e.id + '-' + run.time, pos: { x: Math.max(view.minX,Math.min(view.maxX,p.pos.x)), y: Math.max(view.minY,Math.min(view.maxY,p.pos.y)) }, phase: -0.2, hit: false, boss: false, magic: true, damage: stats!.damage }); }
@@ -196,14 +198,14 @@ export function tick(s: GameState, input: InputState, delta: number): { events: 
         }
       } else if (e.kind === 'guardian') {
         const a=pathDirection(run.boss,e.pos,p.pos,enemyRadius(e,run.boss));
-        if(a!==null&&(!sight||d>6))moveBody(run.boss,e.pos,{x:Math.cos(a)*dt,y:Math.sin(a)*dt},enemyRadius(e,run.boss));
+        if(a!==null&&(!sight||d>bossRange))moveBody(run.boss,e.pos,{x:Math.cos(a)*dt,y:Math.sin(a)*dt},enemyRadius(e,run.boss));
       } else {
         const ranged = e.kind === 'bug' || e.kind === 'cultist';
         const speed = stats!.speed;
         const keepAway = stats!.keepAway;
         const target = ranged && sight && d < keepAway ? { x: e.pos.x - Math.cos(direction(e.pos, p.pos)), y: e.pos.y - Math.sin(direction(e.pos, p.pos)) } : p.pos;
         const a = pathDirection(run.boss, e.pos, target,enemyRadius(e,run.boss));
-        if (a !== null && (!ranged || !sight || d < keepAway || d > keepAway + 1.5)) moveBody(run.boss, e.pos, { x: Math.cos(a) * speed * dt, y: Math.sin(a) * speed * dt }, enemyRadius(e,run.boss));
+        if (a !== null && (!ranged || !sight || d < keepAway || d > stats!.range)) moveBody(run.boss, e.pos, { x: Math.cos(a) * speed * dt, y: Math.sin(a) * speed * dt }, enemyRadius(e,run.boss));
       }
     } else if (e.mode === 'windup') {
       const wait = e.kind === 'guardian' ? bossConfig.windup[phase] : stats!.windup;

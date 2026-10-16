@@ -1,0 +1,83 @@
+{
+  "generated_calls": {
+    "armor": 1,
+    "weapon": 1
+  },
+  "raw_armor_alpha_equal": false,
+  "runtime_alpha_equal": true,
+  "protected_rects": [
+    [
+      320,
+      190,
+      455,
+      345
+    ],
+    [
+      485,
+      180,
+      625,
+      320
+    ],
+    [
+      170,
+      675,
+      330,
+      815
+    ],
+    [
+      640,
+      650,
+      830,
+      805
+    ],
+    [
+      650,
+      780,
+      920,
+      1090
+    ],
+    [
+      450,
+      900,
+      540,
+      1140
+    ]
+  ],
+  "protected_rgba_equal": true,
+  "compression": [
+    {
+      "asset": "diving-coat-layer",
+      "tool": "Pillow 12.3.0 PNG optimize=True compress_level=9",
+      "before": 480367,
+      "after": 445249,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "rgba_identical": true
+    },
+    {
+      "asset": "diving-coat-icon",
+      "tool": "Pillow 12.3.0 PNG optimize=True compress_level=9",
+      "before": 731951,
+      "after": 676438,
+      "dimensions": [
+        640,
+        912
+      ],
+      "rgba_identical": true
+    },
+    {
+      "asset": "brass-revolver-icon",
+      "tool": "Pillow 12.3.0 PNG optimize=True compress_level=9",
+      "before": 955611,
+      "after": 902317,
+      "dimensions": [
+        1211,
+        867
+      ],
+      "rgba_identical": true
+    }
+  ],
+  "raw_armor_silhouette_changed_pixels": 29667
+}

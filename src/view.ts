@@ -1,3 +1,4 @@
+import { bindBattleControls } from './battle-controls.ts';
 import { renderSkillChoice, renderResearch } from './rogue-panels.ts';
 import { SKILLS, EQUIPMENT } from './roguelite.ts';
 import type { SkillId } from './roguelite.ts';
@@ -9,7 +10,7 @@ import { renderCharacterPanel } from './character-panel.ts';
 import type { CharacterTab, EquipmentSlot } from './character-panel.ts';
 import { availableQuests, BOSSES, CAREERS, maxHealth, experience, MATERIAL_NAMES, QUESTS, UPGRADES } from './model.ts';
 import type { CareerId, GameState, QuestId } from './model.ts';
-import { nearbyInteraction } from './engine.ts';
+import { DODGE_COOLDOWN, nearbyInteraction } from './engine.ts';
 import { LobbyInteractions, lobbyToolIcon, renderLobby } from './lobby.ts';
 import type { LobbyToolId } from './lobby.ts';
 
@@ -120,6 +121,8 @@ export class GameView {
       if (mq.matches && this.options.page() === 'run') this.options.action('pause');
     };
     mq.addEventListener('change', orientation);
+    window.addEventListener('blur',()=>this.releaseControls());
+    window.addEventListener('resize',()=>this.releaseControls());
   }
   private handle(action: string, value?: string) {
     if (action === 'expedition-region' && value && worldRegion(value)) {
@@ -280,9 +283,9 @@ export class GameView {
     return '<div class="run-drawer inset-drawer">' + this.panelHeader('本次案件', '目标进度会在安全撤离后记录。') + '<div class="panel-scroll run-task-list">' + (tasks || '<div class="empty-illustration"><strong>自由调查</strong><p>本次没有接取案件。物资仍可带回调查所。</p></div>') + '</div><div class="panel-actions">' + button('panel:pause', '返回暂停', 'button-primary') + '</div></div>';
   }
   private helpPanel(): string {
-    const items = [['01','左手移动','左下区域拖动摇杆。松开停止；撞上障碍后沿边缘滑动。'],['02','自动射击','进入战斗后会自动锁定最近的可见怪物射击，不用对准，也不用按攻击键。'],['03','看清预警再躲开','怪物出现攻击预警或地面法术标记时，移动或闪避离开危险区。'],['04','靠近目标再交互','靠近补给箱、案件证物或撤离信标后，点击交互按钮。'],['05','应对四周敌群','全副本共五波，波内分批增援。可向各方向走位，残敌继续追击，第五波 Boss 在附近显现。'],['06','查看战区和案件','暂停时查看战区地图、证物、案件和补给；调查时间不会推进。']];
+    const items = [['01','左手移动','在战场空白处按住并拖动。摇杆随按下位置出现，拖出外圈仍可移动，松手停止。'],['02','自动射击','进入战斗后会自动锁定最近的可见怪物射击，不用对准，也不用按攻击键。'],['03','急救与闪避','急救按钮在闪避上方，点击恢复40生命。满血或急救包用完时不消耗。'],['04','看清预警再躲开','怪物出现攻击预警或地面法术标记时，移动或闪避离开危险区。'],['05','靠近目标再交互','靠近补给箱、案件证物或撤离信标后，点击交互按钮。'],['06','应对四周敌群','全副本共五波，波内分批增援。可向各方向走位，残敌继续追击，第五波 Boss 在附近显现。'],['07','查看战区和案件','暂停时查看战区地图、证物、案件和补给；调查时间不会推进。']];
     const content=items.map(item => '<div class="help-step"><span class="step-no">' + item[0] + '</span><div><strong>' + item[1] + '</strong><p>' + item[2] + '</p></div></div>').join('');
-    return '<div class="run-drawer inset-drawer">' + this.panelHeader('调查操作', '左手移动 · 右手闪避与交互') + '<div class="panel-scroll help-content">' + content + '<div class="help-footnote">自动射击不受角色朝向限制。新成长规则中，拾取青色能量升级并三选一；所有技能自动释放。本局等级与技能在结算后重置。</div></div><div class="panel-actions">' + button('panel:pause', '回到暂停', 'button-primary') + '</div></div>';
+    return '<div class="run-drawer inset-drawer">' + this.panelHeader('调查操作', '左手移动 · 右手闪避、急救与交互') + '<div class="panel-scroll help-content">' + content + '<div class="help-footnote">自动射击不受角色朝向限制。新成长规则中，拾取青色能量升级并三选一；所有技能自动释放。本局等级与技能在结算后重置。</div></div><div class="panel-actions">' + button('panel:pause', '回到暂停', 'button-primary') + '</div></div>';
   }
   private home(s: GameState | null) {
     const resume = s?.run ? '调查中 · 回到已保存的位置' : s?.summary ? '雾港沉船区 · 调查已完成' : s ? '雾港调查所 · 沉船区开放' : '案件 · 远程战斗 · 调查所成长';
@@ -295,9 +298,11 @@ export class GameView {
     const waves=combatWaves(r),next=waves[wave],count=aliveEnemies(r).length;
     const active=waves[wave-1],batch=r.battle?.batches?.[wave-1]??0;
     const nextBatch=active&&batch<active.batches?active.at+batch*active.batchInterval:null;
-    const heading=r.battle?.won?'调查胜利':wave===0?'入场准备':wave===5?'第 5 / 5 波 · Boss 战':`第 ${wave} / 5 波`;
-    const detail=r.battle?.won?'战利品已汇集 · 可撤离':r.battle?.pending.some(p=>!p.queued)?'四周显现 · 注意标记':nextBatch!==null?`${Math.max(0,Math.ceil(nextBatch-r.time))}秒后 · 敌群增援`:next?`${Math.max(0,Math.ceil(next.at-r.time))}秒后 · 第${wave+1}波`:`残敌 ${count}`;
-    return `<header class="topbar battle-top"><div class="health-pack"><span class="health-caption">生命</span><span class="health-track"><i class="health-fill" style="width:${Math.max(0,hp/max*100)}%"></i></span><strong>${hp}<small>/${max}</small></strong></div><div class="energy-pack"><span>Lv.${xp.level}</span><span class="energy-track" role="progressbar" aria-label="克苏鲁能量经验" aria-valuemin="0" aria-valuemax="${xp.required}" aria-valuenow="${xp.capped?xp.required:Math.min(xp.current,xp.required)}"><i style="width:${xp.capped?100:Math.min(100,xp.current/xp.required*100)}%"></i></span><span>${xp.capped?'满级':`${xp.current}/${xp.required}`}</span></div><div class="wave-bar"><strong>${heading}</strong><span>${detail}</span></div><button class="button pause-button" data-action="pause" aria-label="暂停调查，查看案件与补给">Ⅱ</button></header><div class="battle-bottom-note"><span>残敌 ${count}</span><span>急救 ${r.player.potions}</span></div>`;
+    const heading=r.battle?.won?'调查胜利':wave===0?'入场准备':wave===5?'5/5 · Boss':`${wave}/5 波`;
+    const detail=r.battle?.won?'可撤离':r.battle?.pending.some(p=>!p.queued)?'四周涌出':nextBatch!==null?`增援 ${Math.max(0,Math.ceil(nextBatch-r.time))}秒`:next?`下波 ${Math.max(0,Math.ceil(next.at-r.time))}秒`:'';
+    const critical=hp<=max*.3;
+    return `<header class="topbar battle-top${critical?' is-critical':''}"><div class="health-pack"><div class="health-heading"><strong><span class="health-caption">${critical?'濒危':'生命'}</span>${hp}<small> / ${max}</small></strong><span class="battle-level">Lv.${xp.level}</span></div><span class="health-track" role="progressbar" aria-label="生命" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${Math.max(0,hp)}"><i class="health-fill" style="width:${Math.max(0,hp/max*100)}%"></i></span><span class="energy-track" role="progressbar" aria-label="本局经验" aria-valuemin="0" aria-valuemax="${xp.required}" aria-valuenow="${xp.capped?xp.required:Math.min(xp.current,xp.required)}" aria-valuetext="${xp.capped?'已满级':`${xp.current} / ${xp.required}`}" title="${xp.capped?'已满级':`经验 ${xp.current} / ${xp.required}`}"><i style="width:${xp.capped?100:Math.min(100,xp.current/xp.required*100)}%"></i></span></div><div class="wave-bar"><strong>${heading}</strong><span>${detail}</span><span class="enemy-count">残敌 ${count}</span></div><button class="button pause-button" data-action="pause" aria-label="暂停调查，查看案件与补给" title="暂停调查"><span class="pause-glyph" aria-hidden="true"></span></button></header>`;
+
   }
   private result(s: GameState) {
     const sum=s.summary!, losses=!sum.success;
@@ -369,56 +374,31 @@ export class GameView {
   private renderControls(s:GameState|null,page:AppPage){
     if(page!=='run'||!s?.run){if(this.controls.dataset.active==='battle'){this.releaseControls();this.controls.replaceChildren();this.controls.dataset.active='';}return;}
     if(this.controls.dataset.active==='battle')return;
-    this.controls.dataset.active='battle';this.controls.innerHTML=`<div class="controls-well"><div class="stick-zone" data-stick aria-label="左侧移动摇杆"><span class="stick-base"><i class="stick-knob"></i></span></div><div class="action-cluster"><button class="battle-action skill-action" data-touch="skill" aria-label="职业能力"><span class="action-icon">${img('seal','职业能力',k=>this.icon(k))}</span><small>能力</small><i class="cooldown-mask"></i></button><button class="battle-action interact-action is-hidden" data-touch="interact" aria-label="交互"><span class="action-icon">${img('bag','交互',k=>this.icon(k))}</span><small>交互</small></button><button class="battle-action dodge-action" data-touch="dodge" aria-label="闪避"><span class="action-icon">${img('compass','闪避',k=>this.icon(k))}</span><small>闪避</small><i class="cooldown-mask"></i></button><div class="auto-fire-indicator" aria-label="自动射击已开启"><span>${img('weapon','自动射击',k=>this.icon(k))}</span><small>自动</small></div></div></div>`;
+    this.controls.dataset.active='battle';this.controls.innerHTML=`<div class="controls-well"><div class="movement-surface" data-movement-surface role="group" aria-label="战场拖动移动，松手停止"></div><div class="stick-zone" data-stick aria-hidden="true"><span class="stick-base"><i class="stick-knob"></i></span></div><div class="action-cluster"><button class="battle-action skill-action" data-touch="skill" aria-label="职业能力"><span class="action-icon">${img('seal','职业能力',k=>this.icon(k))}</span><small>能力</small><i class="cooldown-mask"></i></button><button class="battle-action interact-action is-hidden" data-touch="interact" aria-label="交互"><span class="action-icon">${img('bag','交互',k=>this.icon(k))}</span><small>交互</small></button><button class="battle-action potion-action" data-touch="potion" aria-label="使用急救包"><span class="action-icon">${img('medkit','急救包',k=>this.icon(k))}</span><small>急救${s.run.player.potions}</small></button><button class="battle-action dodge-action" data-touch="dodge" aria-label="闪避"><span class="action-icon">${img('compass','闪避',k=>this.icon(k))}</span><small>闪避</small><i class="cooldown-mask"></i></button></div></div>`;
     if(s.run.rogue)this.controls.querySelector<HTMLElement>('.skill-action')!.hidden=true;
-    const area=this.controls.querySelector<HTMLElement>('[data-stick]')!;
-    const knob=area.querySelector<HTMLElement>('.stick-knob')!;
-    let stickId:number|null=null;
-    const update=(event:PointerEvent)=>{
-      const rect=area.getBoundingClientRect(), cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
-      let dx=(event.clientX-cx)/(rect.width*0.5),dy=(event.clientY-cy)/(rect.height*0.5),mag=Math.hypot(dx,dy);
-      if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom){this.options.action('move','0,0');knob.style.transform='translate(0,0)';return;}
-      if(mag>1){dx/=mag;dy/=mag;mag=1;}if(mag<0.12){dx=0;dy=0;}
-      knob.style.transform=`translate(${dx*37}px,${dy*37}px)`;this.options.action('move',`${dx.toFixed(3)},${dy.toFixed(3)}`);
-    };
-    area.addEventListener('pointerdown',event=>{if(stickId!==null)return;event.preventDefault();stickId=event.pointerId;area.setPointerCapture(event.pointerId);update(event);});
-    area.addEventListener('pointermove',event=>{if(event.pointerId===stickId)update(event);});
-    const stopStick=(event:PointerEvent)=>{if(event.pointerId!==stickId)return;stickId=null;knob.style.transform='translate(0,0)';this.options.action('move','0,0');};
-    area.addEventListener('pointerup',stopStick);area.addEventListener('pointercancel',stopStick);area.addEventListener('lostpointercapture',stopStick);
-    let actionPointer:number|null=null,held='';
-    const controls=this.controls.querySelector<HTMLElement>('.action-cluster')!;
-    const applyTarget=(element:Element|null)=>{
-      const target=element?.closest<HTMLElement>('[data-touch]');
-      const next=target?.dataset.touch??'';
-      const pulse=(kind:string)=>this.options.action(`pulse:${kind}`);
-      if(next===held)return;
-      if(held==='interact')this.options.action('hold-interact','0');
-      if(next==='interact'){held=next;this.options.action('hold-interact','1');this.options.action('pulse:interact');}
-      else if(next==='dodge'||next==='skill'){
-        if(next==='skill'&&target?.classList.contains('is-locked')){this.toastMessage('扩建调查所后可解锁职业能力。');held='';return;}
-        held=next;pulse(next);
-      }
-      else held='';
-    };
-    controls.addEventListener('pointerdown',event=>{
-      const target=(event.target as Element).closest<HTMLElement>('[data-touch]');if(!target||actionPointer!==null)return;
-      event.preventDefault();actionPointer=event.pointerId;controls.setPointerCapture(event.pointerId);applyTarget(target);
+    const area=this.controls.querySelector<HTMLElement>('[data-movement-surface]')!;
+    const stick=this.controls.querySelector<HTMLElement>('[data-stick]')!;
+    this.releaseControls=bindBattleControls({area,stick,actions:this.controls.querySelector<HTMLElement>('.action-cluster')!,
+      isBlocked:()=>this.options.paused()||this.options.pending()||!!this.options.savingError()||this.overlay.classList.contains('is-visible'),
+      dispatch:(name,value)=>this.options.action(name,value),
+      onLockedSkill:()=>this.toastMessage('扩建调查所后可解锁职业能力。'),
     });
-    controls.addEventListener('pointermove',event=>{if(event.pointerId===actionPointer)applyTarget(document.elementFromPoint(event.clientX,event.clientY));});
-    const stopAction=(event:PointerEvent)=>{if(event.pointerId!==actionPointer)return;actionPointer=null;if(held==='interact')this.options.action('hold-interact','0');held='';};
-    controls.addEventListener('pointerup',stopAction);controls.addEventListener('pointercancel',stopAction);controls.addEventListener('lostpointercapture',stopAction);
-    this.releaseControls=()=>{
-      if(stickId!==null){const id=stickId;stickId=null;knob.style.transform='translate(0,0)';this.options.action('move','0,0');if(area.hasPointerCapture(id))area.releasePointerCapture(id);}
-      if(actionPointer!==null){const id=actionPointer;actionPointer=null;if(held==='interact')this.options.action('hold-interact','0');held='';if(controls.hasPointerCapture(id))controls.releasePointerCapture(id);}
-    };
   }
+
   private renderHud(s:GameState|null,page:AppPage){
     const mode=this.options.paused(),run=s?.run,near=run?nearbyInteraction(s!):null;
     const signature=[page,mode,run?.room,run?.player.hp,run?.player.potions,run?.player.dodgeCd.toFixed(1),run?.player.skillCd.toFixed(1),run?.survey.toFixed(1),near?.id,near?.locked,s?.shop,s?.gold,s?.materials.crystal,s?.materials.iron,s?.quests.map(q=>`${q.id}${q.progress}${q.ready}`).join(','),this.options.pending()].join('|');
     if(signature===this.hudSignature)return;this.hudSignature=signature;
     const skill=this.controls.querySelector<HTMLElement>('[data-touch="skill"]'),dodge=this.controls.querySelector<HTMLElement>('[data-touch="dodge"]');
     skill?.classList.toggle('is-hidden',!s?.skill);skill?.classList.toggle('is-cooldown',(run?.player.skillCd??0)>0);if(skill){skill.querySelector('small')!.textContent=run?.player.skillCd?run.player.skillCd.toFixed(1):s?CAREERS[s.career].skill.replace('标记',''):'能力';skill.setAttribute('aria-label',s?CAREERS[s.career].skill:'职业能力');}
-    dodge?.classList.toggle('is-cooldown',(run?.player.dodgeCd??0)>0);if(dodge)dodge.querySelector('small')!.textContent=run?.player.dodgeCd?run.player.dodgeCd.toFixed(1):'闪避';
+    dodge?.classList.toggle('is-cooldown',(run?.player.dodgeCd??0)>0);if(dodge){const cooldown=run?.player.dodgeCd??0;dodge.querySelector('small')!.textContent=cooldown?`${cooldown.toFixed(1)}秒`:'闪避';dodge.style.setProperty('--cooldown',String(Math.min(1,cooldown/DODGE_COOLDOWN)));dodge.setAttribute('aria-label',cooldown?`闪避冷却，剩余${cooldown.toFixed(1)}秒`:'闪避，可用');}
+    const potion=this.controls.querySelector<HTMLButtonElement>('[data-touch="potion"]');
+    if(potion&&s&&run){
+      const full=run.player.hp>=maxHealth(s),empty=run.player.potions===0;
+      potion.disabled=full||empty;potion.classList.toggle('is-unavailable',full||empty);potion.classList.toggle('is-urgent',!empty&&run.player.hp<=maxHealth(s)*.35);
+      potion.querySelector('small')!.textContent=`急救${run.player.potions}`;
+      potion.setAttribute('aria-label',empty?'急救包已用完':full?`生命已满，急救包${run.player.potions}个`:`使用急救包，恢复40生命，剩余${run.player.potions}个`);
+    }
     const interact=this.controls.querySelector<HTMLElement>('[data-touch="interact"]');if(interact){const caption=interactionCaption(near?.label,near?.locked);interact.classList.toggle('is-hidden',!near);interact.classList.toggle('is-locked',!!near?.locked);interact.querySelector('small')!.textContent=caption;interact.setAttribute('aria-label',near?.locked??near?.label??'交互');interact.title=near?.locked??near?.label??'';}
     this.controls.classList.toggle('is-paused',page==='run'&&mode);
     const orientation=matchMedia('(orientation: landscape) and (pointer: coarse)').matches;

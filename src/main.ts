@@ -161,6 +161,12 @@ function chooseQuestId(value?: string): QuestId | null {
 function route(action: string, value?: string) {
   if (action.startsWith('pulse:')) {
     const kind = action.slice(6);
+    if(kind==='potion'){
+      if(!state?.run||paused||busy||savingError||startupError||state.run.rogue?.offers.length)return;
+      const error=usePotion(state);
+      if(error){view.toastMessage(error);return;}
+      audio.play('task');view.toastMessage('急救生效，恢复生命。');recordAutosave();refresh(true);return;
+    }
     if (kind === 'dodge') input.dodge = true;
     if (kind === 'skill') input.skill = true;
     if (kind === 'interact') interactPulse = true;

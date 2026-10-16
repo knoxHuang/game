@@ -1,7 +1,6 @@
 import type { Enemy, Room, Run, SpawnWarning, Vec } from './model.ts';
 import { dungeon, enemyDefinition } from './content/registry.ts';
 import { roles, LEGACY_WORLD_HEIGHT } from './content/schema.ts';
-import { battleCamera } from './battle-camera.ts';
 import { distance, isFree, nearestFreePoint, pathDirection } from './geometry.ts';
 
 export const emptyRoom=(id:number):Room=>({id,enemies:[],objects:[],drops:[],hazards:[],projectiles:[],visited:true,grace:0,encounter:'pending',wave:0,waveDelay:0});
@@ -31,31 +30,29 @@ export function ensureBattle(run:Run):void {
   if(clearedBoss)winBattle(run);
 }
 
-function spawnArea(run:Run,kind:Enemy['kind'],viewport:{width:number;height:number}) {
-  const camera=battleCamera(viewport.width,viewport.height,run.player.pos,dungeon(run.boss).arena,kind==='guardian'||aliveEnemies(run).some(e=>e.kind==='guardian'));
-  const actor=enemyDefinition(run.boss,kind),margin=kind==='guardian'?actor.size/2:.4;
-  return {minY:camera.minY+margin,maxY:camera.maxY-margin,left:Math.max(camera.minX+margin,1.5+actor.radius+.25),right:Math.min(camera.maxX-margin,dungeon(run.boss).arena.width-1.5-actor.radius-.25)};
-}
-function candidates(run:Run,index:number,kind:Enemy['kind'],viewport:{width:number;height:number}):{pos:Vec;side:SpawnWarning['side']}[] {
-  const {minY,maxY,left,right}=spawnArea(run,kind,viewport);
-  const sides:SpawnWarning['side'][]=['north','east','south','west'];
+function candidates(run:Run,kind:Enemy['kind']):{pos:Vec;side:SpawnWarning['side']}[] {
+  const definition=dungeon(run.boss),arena=definition.arena,actor=enemyDefinition(run.boss,kind);
+  const margin=kind==='guardian'?actor.size/2:actor.size*.68;
+  const left=1.5+margin,right=arena.width-1.5-margin,minY=1.5+margin,maxY=arena.height-1.5-margin;
   const result:{pos:Vec;side:SpawnWarning['side']}[]=[];
-  // Search the intended side before falling back, so one blocked point does not erase that direction.
-  for(let sideOffset=0;sideOffset<4;sideOffset++)for(let attempt=0;attempt<8;attempt++) {
-    const side=sides[(index+sideOffset)%4],fraction=[.2,.5,.8,.35,.65,.1,.9,.42][(Math.floor(index/4)+attempt)%8];
-    const pos=side==='north'?{x:left+fraction*(right-left),y:minY}:side==='south'?{x:left+fraction*(right-left),y:maxY}:side==='west'?{x:left,y:minY+fraction*(maxY-minY)}:{x:right,y:minY+fraction*(maxY-minY)};
-    result.push({pos,side});
+  const sideOf=(pos:Vec):SpawnWarning['side']=>{const dx=pos.x-run.player.pos.x,dy=pos.y-run.player.pos.y;return Math.abs(dx)>Math.abs(dy)?dx>0?'east':'west':dy>0?'south':'north';};
+  // Sample the world around the player, including positions beyond the current screen.
+  const inner=definition.combat.safeDistance+1,outer=Math.min(10,Math.max(arena.width,arena.height)*.4);
+  for(let attempt=0;attempt<48;attempt++){
+    const angle=Math.random()*Math.PI*2,radius=inner+Math.random()*(outer-inner);
+    const pos={x:run.player.pos.x+Math.cos(angle)*radius,y:run.player.pos.y+Math.sin(angle)*radius};
+    if(pos.x<left||pos.x>right||pos.y<minY||pos.y>maxY)continue;
+    result.push({pos,side:sideOf(pos)});
   }
-  // Additional safe cells let later waves coexist without reusing occupied edge points.
-  for(let y=minY;y<=maxY;y+=.95)for(let x=left;x<=right;x+=.95){
-    const dx=x-run.player.pos.x,dy=y-run.player.pos.y;
-    result.push({pos:{x,y},side:Math.abs(dx)>Math.abs(dy)?dx>0?'east':'west':dy>0?'south':'north'});
-  }
-  return result;
+  // Congestion and arena corners still need a reachable fallback, without a fixed entry side.
+  const cells:{pos:Vec;side:SpawnWarning['side']}[]=[];
+  for(let y=minY;y<=maxY;y+=.95)for(let x=left;x<=right;x+=.95){const pos={x,y};cells.push({pos,side:sideOf(pos)});}
+  for(let i=cells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+  return [...result,...cells];
 }
-export function spawnPoint(run:Run,index:number,kind:Enemy['kind'],viewport={width:360,height:640}) {
+export function spawnPoint(run:Run,_index:number,kind:Enemy['kind'],_viewport={width:360,height:640}) {
   const world=battleWorld(run),radius=enemyDefinition(run.boss,kind).radius;
-  return candidates(run,index,kind,viewport).find(({pos})=>
+  return candidates(run,kind).find(({pos})=>
     distance(pos,run.player.pos)>=dungeon(run.boss).combat.safeDistance+(kind==='guardian'?.8:0)
     &&isFree(run.boss,pos,radius)
     &&(kind==='guardian'||world.enemies.every(e=>e.hp<=0||distance(pos,e.pos)>=radius+enemyDefinition(run.boss,e.kind).radius+.2))
@@ -98,8 +95,7 @@ export function updateBattle(run:Run,dt:number,viewport={width:360,height:640}):
     if(pending.remaining>0){retained.push(pending);continue;}
     if(run.rogue&&pending.kind!=='guardian'&&world.enemies.filter(e=>e.hp>0).length>=90){pending.queued=true;retained.push(pending);continue;}
     const radius=enemyDefinition(run.boss,pending.kind).radius;
-    const area=spawnArea(run,pending.kind,viewport);
-    if(pending.pos.x<area.left||pending.pos.x>area.right||pending.pos.y<area.minY||pending.pos.y>area.maxY||distance(pending.pos,run.player.pos)<definition.combat.safeDistance||!isFree(run.boss,pending.pos,radius)||(pending.kind!=='guardian'&&world.enemies.some(e=>e.hp>0&&distance(e.pos,pending.pos)<radius+enemyDefinition(run.boss,e.kind).radius+.1))) {
+    if(distance(pending.pos,run.player.pos)<definition.combat.safeDistance+(pending.kind==='guardian'?.8:0)||!isFree(run.boss,pending.pos,radius)||(pending.kind!=='guardian'&&world.enemies.some(e=>e.hp>0&&distance(e.pos,pending.pos)<radius+enemyDefinition(run.boss,e.kind).radius+.1))) {
       const at=spawnPoint(run,retained.length+state.wave,pending.kind,viewport);
       if(at){pending.pos=at.pos;pending.side=at.side;}else if(run.rogue)pending.queued=true;pending.remaining=definition.combat.warning;retained.push(pending);changed=true;continue;
     }

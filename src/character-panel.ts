@@ -1,3 +1,4 @@
+import { characterPaperdoll } from './character-art.ts';
 import { SKILLS, mainSkill } from './roguelite.ts';
 import { renderRogueEquipment } from './rogue-panels.ts';
 import { attackDamage, careerStats, CAREERS, MATERIAL_NAMES, maxHealth, UPGRADES, upgradeStatus, wearingArmor, experience } from './model.ts';
@@ -12,7 +13,7 @@ const art = (key: string, icon: Options['icon']) => {
   const src = icon(key);
   return src ? `<img src="${src}" alt="">` : '<span class="equipment-art-pending" aria-hidden="true">◇</span>';
 };
-const paperdoll = (s: GameState) => `<span class="character-paperdoll" role="img" aria-label="${wearingArmor(s) ? '穿黄色雨衣' : '穿普通内搭'}的林烬正面形象"><img class="character-body" src="/assets/character/linjin-base.png" alt="">${wearingArmor(s) ? '<img class="character-coat" src="/assets/character/raincoat-layer.png" alt="">' : ''}</span>`;
+const paperdoll = (s: GameState) => characterPaperdoll(s.research ? !!s.research.equipped.armor : wearingArmor(s), s.research?.equipped.armor === 'diving_coat');
 const action = (name: string, label: string, value = '', disabled = false) => `<button class="button button-secondary" data-action="${name}"${value ? ` data-value="${value}"` : ''}${disabled ? ' disabled' : ''}>${label}</button>`;
 
 function upgrade(s: GameState, id: UpgradeId): string {
@@ -54,8 +55,8 @@ function careers(s: GameState, options: Options): string {
   const selectors = (Object.entries(CAREERS) as [CareerId, typeof career][]).map(([key, item]) => `<button class="profession-selector${key === id ? ' is-selected' : ''}" data-action="career-preview" data-value="${key}" aria-pressed="${key === id}" aria-label="预览${item.name}"><span>${art(weaponIcon(key), options.icon)}</span><strong>${item.name}</strong>${key === s.career ? '<small>当前</small>' : ''}</button>`).join('');
   return `<p class="profession-instruction">轻触武器，查看职业档案。</p><div class="profession-selectors" role="group" aria-label="职业预览">${selectors}</div>
     <section class="profession-showcase" aria-label="${career.name}职业展示" data-career="${id}">
-      <div class="profession-portrait">${paperdoll(s)}<span class="profession-showcase-weapon">${art(weaponIcon(id), options.icon)}</span></div>
-      <div class="profession-caption"><span>林烬 · 职业档案</span><h3>${career.name}</h3><p>${career.weaponName}</p><div class="profession-traits">${traits.map(trait => `<span>${trait}</span>`).join('')}</div></div>
+      <div class="profession-portrait">${paperdoll(s)}</div>
+      <div class="profession-caption"><span>林烬 · 职业档案</span><h3>${career.name}</h3><p class="profession-weapon-label"><span class="profession-showcase-weapon">${art(weaponIcon(id), options.icon)}</span>${career.weaponName}</p><div class="profession-traits">${traits.map(trait => `<span>${trait}</span>`).join('')}</div></div>
     </section>
     <div class="profession-details"><p>${career.description}</p><dl><div><dt>基础单发</dt><dd>${career.damage}</dd></div><div><dt>攻击间隔</dt><dd>${career.cooldown} 秒</dd></div><div><dt>射程</dt><dd>${career.range}</dd></div></dl>${s.research?`<p class="profession-skill"><strong>${SKILLS[mainSkill(id)].name}</strong><span>自动攻击 · 每局独立强化</span></p><p>${SKILLS[mainSkill(id)].detail}</p>`:`<p class="profession-skill"><strong>${career.skill}</strong><span>职业能力 · 冷却 6 秒${s.skill ? '' : ' · 尚未解锁'}</span></p>`}</div>
     ${s.run ? '<p class="equipment-requirement">调查进行中，返回调查所后才能更换职业。</p>' : ''}

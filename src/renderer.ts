@@ -2,7 +2,7 @@ import { rogueArea, skillLevel } from './roguelite.ts';
 import { sampleMotion } from './actor-motion.ts';
 import type { MotionSample } from './actor-motion.ts';
 import { battleWorld, bossHealth } from './battle.ts';
-import { battleCamera } from './battle-camera.ts';
+import { battleCamera, BATTLE_HUD_HEIGHT, BOSS_HUD_HEIGHT } from './battle-camera.ts';
 import { dungeon, enemyDefinition, assetKey, bossAttack } from './content/registry.ts';
 import { colorNumber } from './content/schema.ts';
 import Phaser from 'phaser';
@@ -25,6 +25,7 @@ class WorldScene extends Phaser.Scene {
   private effects!: Phaser.GameObjects.Graphics;
   private label!: Phaser.GameObjects.Text;
   private bossTitle!: Phaser.GameObjects.Text;
+  private bossInlay!: Phaser.GameObjects.Image;
   private bossLocator!: Phaser.GameObjects.Text;
   private backgroundKey = '';
   private tile = 30;
@@ -34,14 +35,17 @@ class WorldScene extends Phaser.Scene {
   private ox = 0;
   private oy = 0;
   constructor(private read: () => GameState | null, private mode: () => RenderMode, private frame: (dt: number) => void, private ready: () => void) { super('world'); }
-  preload() { this.load.image('lobby-cutaway', '/assets/lobby/cutaway-harbor.png'); preloadArt(this); }
+  preload() { this.load.image('lobby-cutaway', '/assets/lobby/cutaway-harbor.png'); this.load.image('battle-hud-frame', '/assets/ui/harbor-mystery-frame.webp'); preloadArt(this); }
   create() {
     createTextures(this);
     this.staticLayer = this.add.container(0, 0);
     this.shadows = this.add.graphics().setDepth(10);
     this.effects = this.add.graphics().setDepth(100);
+    const hudTexture=this.textures.get('battle-hud-frame'),hudSource=hudTexture.getSourceImage();
+    hudTexture.add('boss-inlay',0,Math.round(hudSource.width*.3),Math.round(hudSource.height*.035),Math.round(hudSource.width*.4),Math.round(hudSource.height*.02));
+    this.bossInlay = this.add.image(0,0,'battle-hud-frame','boss-inlay').setOrigin(0,0).setDepth(99).setVisible(false);
     this.label = this.add.text(0, 0, '', { fontFamily: 'sans-serif', fontSize: '13px', color: '#d8b66a', stroke: '#17232c', strokeThickness: 3 }).setOrigin(0.5, 1).setDepth(105);
-    this.bossTitle = this.add.text(0, 0, '', { fontFamily: 'sans-serif', fontSize: '12px', color: '#d7eee0', stroke: '#17232c', strokeThickness: 3, fontStyle: 'bold' }).setOrigin(0, 0).setDepth(108).setVisible(false);
+    this.bossTitle = this.add.text(0, 0, '', { fontFamily: '"Songti SC",serif', fontSize: '14px', color: '#e0cba2', stroke: '#0b1920', strokeThickness: 2 }).setOrigin(0, 0).setDepth(108).setVisible(false);
     this.bossLocator = this.add.text(0, 0, '', { fontFamily: 'sans-serif', fontSize: '14px', color: '#f0d395', stroke: '#102025', strokeThickness: 4 }).setOrigin(.5).setDepth(120).setVisible(false);
     this.ready();
   }
@@ -74,7 +78,7 @@ class WorldScene extends Phaser.Scene {
   private image(id: string, key: string, x: number, y: number, size: number, alpha = 1, frameIndex?: number): Phaser.GameObjects.Image {
     let actor = this.actors.get(id);
     if (!actor) { actor = this.add.image(x, y, key).setDepth(20); this.actors.set(id, actor); }
-    actor.setTexture(key,frameIndex);
+    actor.setTexture(key,frameIndex).setCrop();
     const frame = actor.frame, scale = size / Math.max(frame.realWidth, frame.realHeight);
     actor.setPosition(x, y).setDisplaySize(frame.realWidth * scale, frame.realHeight * scale).setAlpha(alpha).setVisible(true).setDepth(20+y*.001);
     return actor;
@@ -101,7 +105,7 @@ class WorldScene extends Phaser.Scene {
       this.staticLayer.add(art); this.staticLayer.setPosition(0, 0);
     }
     for (const actor of this.actors.values()) actor.setVisible(false);
-    this.shadows.clear(); this.effects.clear(); this.label.setVisible(false); this.bossTitle.setVisible(false); this.bossLocator.setVisible(false);
+    this.shadows.clear(); this.effects.clear(); this.label.setVisible(false); this.bossTitle.setVisible(false); this.bossInlay.setVisible(false); this.bossLocator.setVisible(false);
   }
   private point(v: Vec) { return { x: this.ox + (v.x - 0.5) * this.tile, y: this.oy + (v.y - 0.5) * this.tile }; }
   private paintDungeon(s: GameState, w: number, h: number) {
@@ -114,6 +118,19 @@ class WorldScene extends Phaser.Scene {
       const floor=this.add.graphics();floor.fillStyle(colorNumber(definition.biome.wash)).fillRect(0,0,fullWidth,fullHeight);this.staticLayer.add(floor);
       const background=arena.background?assetKey(run.boss,'background'):definition.biome.floorArt.type==='image'?assetKey(run.boss,'floorArt'):'pier-ground';
       const ground=this.add.image(fullWidth/2,fullHeight/2,background).setDisplaySize(fullWidth,fullHeight);this.staticLayer.add(ground);
+      // Continue the authored sea beyond the finite pier without stretching the arena or moving its bounds.
+      if(arena.background==='/assets/game/dockyard-arena-readable.png'){
+        const texture=this.textures.get(background),source=texture.getSourceImage();
+        const seaTop=Math.floor(source.height*.95);
+        if(!texture.has('sea-margin')){
+          const originalFrame=texture.firstFrame;
+          texture.add('sea-margin',0,0,seaTop,source.width,source.height-seaTop);
+          texture.firstFrame=originalFrame;
+        }
+        const sea=this.add.tileSprite(0,fullHeight,fullWidth,h,background,'sea-margin').setOrigin(0,0);
+        sea.setTileScale(fullWidth/source.width,fullHeight/source.height);
+        this.staticLayer.add(sea);
+      }
       // The first arena has an authored neutral floor; preserve its value hierarchy.
       if(arena.background!=='/assets/game/dockyard-arena-readable.png')ground.setTint(0x829297);
       for(const obstacle of arena.obstacles)this.tileImage(definition.biome.obstacleArt.type==='image'?assetKey(run.boss,'obstacleArt'):'rock',(obstacle.x-.5)*this.tile,(obstacle.y-.5)*this.tile,this.tile*1.15,0x8c9c9d);
@@ -132,12 +149,30 @@ class WorldScene extends Phaser.Scene {
       const next=sampleMotion(this.motion.get(id),pos,reduced);this.motion.set(id,next.sample);return next;
     };
     for(const warning of (run.battle?.pending??[]).filter(p=>!p.queued)){
-      const v=this.point(warning.pos),r=this.tile*(warning.kind==='guardian'?1.3:.55);
-      this.effects.fillStyle(COLORS.danger,.12).fillCircle(v.x,v.y,r);
-      this.effects.lineStyle(4,0x171c28,.95).strokeCircle(v.x,v.y,r);
-      this.effects.lineStyle(2,0xffa28b,1).strokeCircle(v.x,v.y,r);
-      this.effects.lineBetween(v.x,v.y-r*.4,v.x,v.y+r*.1);
-      this.effects.fillStyle(COLORS.danger).fillCircle(v.x,v.y+r*.4,1.5);
+      const v=this.point(warning.pos),actor=enemyDefinition(run.boss,warning.kind),sprite=actor.sprite;
+      const dir=facing(direction(warning.pos,p.pos)),art=enemyArt(run.boss,warning.kind,dir,'idle',0);
+      const key=sprite.type==='builtin'&&warning.kind!=='guardian'?actorKey(warning.kind,dir)+'-rest':art.key;
+      const progress=reduced?.6:Math.max(.04,Math.min(1,1-warning.remaining/definition.combat.warning));
+      const y=v.y-this.tile*(warning.kind==='guardian'?.12:.18);
+      const body=this.image(warning.id,key,v.x,y,this.tile*actor.size*(warning.kind==='guardian'?1:1.36),.7+progress*.3,art.frame);
+      body.setOrigin(sprite.type==='sheet'?sprite.anchor.x:.5,sprite.type==='sheet'?sprite.anchor.y:.5).setRotation(0).setTint(0xffffff);
+      // Lift the cropped body out of a fixed waterline; it is still an untargetable warning.
+      const surface=y+body.displayHeight*(1-body.originY),rx=Math.max(this.tile*.42,body.displayWidth*.45),ry=this.tile*.16;
+      body.y=y+body.displayHeight*(1-progress);
+      body.setCrop(0,0,body.frame.realWidth,Math.max(1,body.frame.realHeight*progress));
+      this.shadows.fillStyle(0x103945,.9).fillEllipse(v.x,surface,rx*2.1,ry*2.3);
+      this.shadows.fillStyle(0x061c27,.85).fillEllipse(v.x,surface-1,rx*1.7,ry*1.6);
+      // Broken foam and short waves read as water instead of a perfect portal ring.
+      this.effects.lineStyle(1,0x548c96,.75).strokePoints([
+        {x:v.x-rx*1.1,y:surface+ry*.3},{x:v.x-rx*.6,y:surface+ry},
+        {x:v.x+rx*.1,y:surface+ry*.8},{x:v.x+rx*.75,y:surface+ry},
+        {x:v.x+rx*1.1,y:surface+ry*.2}],false);
+      for(const side of [-1,1]){
+        this.effects.lineStyle(2,0xc4e0d5,.8).lineBetween(v.x+side*rx*.45,surface+ry*.7,v.x+side*rx*.82,surface+ry*.4);
+        const lift=reduced?.6:progress;
+        this.effects.fillStyle(0x91bfc3,.8).fillRect(v.x+side*rx*.72,surface-ry*(1+lift*1.5),2,2);
+      }
+      this.effects.fillStyle(0xf1c48d,.9).fillRect(v.x-1,surface+ry+3,2,3);
     }
     for (const h of room.hazards) {
       if (h.phase > 1.2) continue;
@@ -164,7 +199,7 @@ class WorldScene extends Phaser.Scene {
     }
     if(run.rogue){
       const level=skillLevel(s,'lantern');
-      if(level){const v=this.point(run.player.pos),radius=(1.2+level*.18)*rogueArea(s)*this.tile;this.effects.lineStyle(1,0xe2bb69,.55).strokeCircle(v.x,v.y,radius);}
+      if(level){const v=this.point(run.player.pos),radius=Math.min(careerStats(s).range,(1.2+level*.18)*rogueArea(s))*this.tile;this.effects.lineStyle(1,0xe2bb69,.55).strokeCircle(v.x,v.y,radius);}
       for(const field of run.rogue.fields){const v=this.point(field.pos),radius=(1+field.level*.16)*rogueArea(s)*this.tile;this.effects.fillStyle(0x77ddcc,.12).fillCircle(v.x,v.y,radius);this.effects.lineStyle(2,0x84e1ca,.7).strokeCircle(v.x,v.y,radius);this.effects.lineBetween(v.x-radius*.5,v.y,v.x+radius*.5,v.y);}
     }
     for (const drop of room.drops.filter(d => !d.taken)) {
@@ -284,13 +319,21 @@ class WorldScene extends Phaser.Scene {
       const location=this.point(boss.pos),north=location.y<camera.top,south=location.y>camera.top+camera.fieldHeight,west=location.x<0,east=location.x>w;
       this.bossLocator.setVisible(north||south||west||east);
       if(north||south||west||east)this.bossLocator.setPosition(w/2,north?camera.top+16:south?camera.top+camera.fieldHeight-16:camera.top+camera.fieldHeight/2).setText(`${north?'↑':south?'↓':west?'←':'→'} ${BOSSES[run.boss].name}`);
-      this.effects.fillStyle(COLORS.ink, 0.98).fillRoundedRect(8, 86, w - 16, 32, 3);
-      this.effects.fillStyle(COLORS.stone).fillRoundedRect(12, 109, w - 24, 7, 3);
-      this.effects.fillStyle(boss.mode === 'recover' ? COLORS.teal : boss.hp <= bossHealth(run) * definition.boss.phaseAt ? 0xa76fba : COLORS.danger).fillRoundedRect(12, 109, (w - 24) * boss.hp / bossHealth(run), 7, 3);
-      const threat = boss.mode === 'recover' ? '弱点暴露 · 输出窗口' : boss.hp <= bossHealth(run) * definition.boss.phaseAt ? '第二阶段 · 危险增强' : '巨型威胁 · 注意预警';
-      this.bossTitle.setPosition(w / 2, 88).setOrigin(0.5, 0).setText(`${BOSSES[run.boss].name} · ${threat}`).setVisible(true);
+      const bossTop=BATTLE_HUD_HEIGHT+4,barTop=bossTop+BOSS_HUD_HEIGHT-7;
+      this.bossInlay.setPosition(8,bossTop).setDisplaySize(w-16,BOSS_HUD_HEIGHT).setVisible(true);
+      this.effects.fillStyle(0x061416,.4).fillRoundedRect(8,bossTop,w-16,BOSS_HUD_HEIGHT,2);
+      this.effects.lineStyle(1,0x977849,.9).strokeRoundedRect(8.5,bossTop+.5,w-17,BOSS_HUD_HEIGHT-1,2);
+      for(const x of [12,w-12])this.effects.fillStyle(0xb6985e).fillRect(x-1,bossTop+4,2,2);
+      this.effects.fillStyle(0x040d10).fillRect(15,barTop-1,w-30,7);
+      this.effects.lineStyle(1,0x816439,.7).strokeRect(15.5,barTop-.5,w-31,6);
+      const bossFill=(w-32)*Math.max(0,Math.min(1,boss.hp/bossHealth(run)));
+      this.effects.fillStyle(boss.mode === 'recover' ? 0x71ac98 : boss.hp <= bossHealth(run) * definition.boss.phaseAt ? 0x9678a7 : 0xaa6555).fillRect(16,barTop,bossFill,5);
+      this.effects.fillStyle(0xe3c08d,.5).fillRect(16,barTop,bossFill,1);
+      const threat = boss.mode === 'recover' ? '弱点暴露' : boss.hp <= bossHealth(run) * definition.boss.phaseAt ? '第二阶段' : '第一阶段';
+      this.bossTitle.setPosition(w/2,bossTop+2).setOrigin(0.5,0).setText(`${BOSSES[run.boss].name} · ${threat}`).setVisible(true);
     } else {
       this.bossTitle.setVisible(false);
+      this.bossInlay.setVisible(false);
       this.bossLocator.setVisible(false);
     }
   }

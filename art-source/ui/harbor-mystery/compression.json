@@ -1,0 +1,12 @@
+{
+  "source": "master.png",
+  "runtime": "public/assets/ui/harbor-mystery-frame.webp",
+  "width": 887,
+  "height": 1774,
+  "pngBytes": 989956,
+  "webpBytes": 730094,
+  "rgbaEqual": true,
+  "dimensionsEqual": true,
+  "centralAlphaMax": 1,
+  "tool": "cwebp -lossless -exact -m 6"
+}

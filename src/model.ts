@@ -67,9 +67,9 @@ export type CareerDefinition = {
 };
 
 export const CAREERS: Record<CareerId, CareerDefinition> = {
-  investigator: { name: '异闻枪手', weaponName: '黄铜左轮', description: '射速稳定，射程均衡，适合初次调查。', attack: '照明弹', skill: '照明弹标记', damage: 10, cooldown: 0.36, speed: 12, range: 7.5, splash: 0, weakpoint: 1.8 },
-  occultist: { name: '秘仪师', weaponName: '仪式符弹', description: '符弹较慢，命中后扩散，对群体更有效。', attack: '符弹', skill: '封印阵', damage: 13, cooldown: 0.6, speed: 8, range: 6.8, splash: 0.8, weakpoint: 1.6 },
-  harpooner: { name: '鱼叉猎手', weaponName: '鱼叉枪', description: '装填较慢，单发强力，Boss 弱点伤害更高。', attack: '鱼叉', skill: '锚索', damage: 24, cooldown: 0.9, speed: 12, range: 9, splash: 0, weakpoint: 2.6 },
+  investigator: { name: '异闻枪手', weaponName: '黄铜左轮', description: '射速稳定，射程均衡，适合初次调查。', attack: '照明弹', skill: '照明弹标记', damage: 10, cooldown: 0.36, speed: 12, range: 3.8, splash: 0, weakpoint: 1.8 },
+  occultist: { name: '秘仪师', weaponName: '仪式符弹', description: '符弹较慢，命中后扩散，对群体更有效。', attack: '符弹', skill: '封印阵', damage: 13, cooldown: 0.6, speed: 8, range: 3.2, splash: 0.8, weakpoint: 1.6 },
+  harpooner: { name: '鱼叉猎手', weaponName: '鱼叉枪', description: '装填较慢，单发强力，Boss 弱点伤害更高。', attack: '鱼叉', skill: '锚索', damage: 24, cooldown: 0.9, speed: 12, range: 4.6, splash: 0, weakpoint: 2.6 },
 };
 export const BOSSES = DUNGEONS_BY_ID;
 export function dungeonAccess(s: GameState, id: BossId): { available: boolean; reasons: string[]; reported: boolean } {

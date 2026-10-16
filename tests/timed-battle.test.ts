@@ -19,9 +19,9 @@ test('波内持续分批来敌，清场、水平或垂直移动均不改变时�
  battleWorld(r).enemies=[];advance(s,.2);assert.equal(r.battle!.batches![0],2);
  r.time=29.95;advance(s,.9);assert.equal(r.battle!.wave,2);assert.ok(aliveEnemies(r).length>=6);
 });
-test('三种竖屏均有四向安全预警，出生前没有攻击者',()=>{
+test('三种竖屏均有周围随机安全预警，出生前没有攻击者',()=>{
  for(const viewport of viewports){const s=state(),r=s.run!;r.time=4.95;tick(s,{...emptyInput(),viewport},.05);
- assert.deepEqual(new Set(r.battle!.pending.map(p=>p.side)),new Set(['north','east','south','west']));assert.equal(aliveEnemies(r).length,0);
+ assert.equal(r.battle!.pending.length,4);assert.ok(r.battle!.pending.every(p=>['north','east','south','west'].includes(p.side)));assert.equal(aliveEnemies(r).length,0);
  for(const p of r.battle!.pending){assert.ok(distance(p.pos,r.player.pos)>=3);assert.ok(isFree(r.boss,p.pos,.34));}
  advance(s,.9,viewport);assert.equal(aliveEnemies(r).length,4);}
 });
@@ -65,9 +65,11 @@ test('112只残敌与 Boss 共存，三种视口不漏批次且可存档',()=>{
 test('被怪物贴身后仍能向外脱离',()=>{
  const s=state(),r=s.run!;r.time=5;updateBattle(r,0);updateBattle(r,1);const world=battleWorld(r),enemy=aliveEnemies(r)[0];world.enemies=[enemy];enemy.pos={x:r.player.pos.x+.1,y:r.player.pos.y};enemy.mode='recover';enemy.timer=-.5;r.player.fireCd=2;const x=r.player.pos.x;tick(s,{...emptyInput(),move:{x:-1,y:0}},.05);assert.ok(r.player.pos.x<x);
 });
-test('预警后移出旧视野，会重新选点并完整预警',()=>{
- const s=state(),r=s.run!,viewport=viewports[0];r.time=5;updateBattle(r,0,viewport);r.player.pos={x:3,y:3};updateBattle(r,.9,viewport);
- const camera=battleCamera(viewport.width,viewport.height,r.player.pos,dungeon(r.boss).arena,false);assert.ok(r.battle!.pending.every(p=>p.pos.x>=camera.minX&&p.pos.x<=camera.maxX&&p.pos.y>=camera.minY&&p.pos.y<=camera.maxY));updateBattle(r,.9,viewport);assert.equal(aliveEnemies(r).length,4);
+test('屏外预警不随镜头尺寸变化跳点；贴近玩家时重选并完整预警',()=>{
+ const s=state(),r=s.run!;r.time=5;updateBattle(r,0,viewports[1]);const before=r.battle!.pending.map(p=>({...p.pos}));
+ updateBattle(r,.4,viewports[0]);assert.deepEqual(r.battle!.pending.map(p=>p.pos),before);
+ const warning=r.battle!.pending[0];r.player.pos={...warning.pos};updateBattle(r,.41,viewports[2]);
+ const relocated=r.battle!.pending.find(p=>p.id===warning.id)!;assert.ok(relocated);assert.ok(distance(relocated.pos,r.player.pos)>=dungeon(r.boss).combat.safeDistance);assert.equal(relocated.remaining,dungeon(r.boss).combat.warning);
 });
 test('Boss 屏外先追近，不从屏外开始蓄力',()=>{
  const s=state(),r=s.run!,viewport=viewports[0];skipToBoss(s,viewport);const boss=aliveEnemies(r).find(e=>e.kind==='guardian')!;boss.pos={x:3,y:14};boss.mode='chase';r.player.pos={x:10,y:14};r.player.fireCd=2;tick(s,{...emptyInput(),viewport},.05);assert.equal(boss.mode,'chase');assert.equal(battleWorld(r).hazards.filter(h=>h.boss).length,0);assert.ok(boss.pos.x>3);
