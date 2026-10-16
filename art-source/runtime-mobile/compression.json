@@ -1,0 +1,357 @@
+{
+  "tool": "libwebp cwebp -q 82 -m 6 -alpha_q 100 -sharp_yuv -mt",
+  "lossyRGB": true,
+  "losslessAlpha": true,
+  "assets": [
+    {
+      "source": "/assets/bosses/cthulhu-avatar.png",
+      "beforeBytes": 2822211,
+      "afterBytes": 314706,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 2.834,
+      "master": "art-source/runtime-mobile/originals/bosses/cthulhu-avatar.png",
+      "runtime": "public/assets/bosses/cthulhu-avatar-mobile.webp",
+      "masterSha256": "76f44d126e67d4d234f4695e035a0759131f6e1a07fb94f5f70a755900ae9858"
+    },
+    {
+      "source": "/assets/bosses/many-eyed-priest.png",
+      "beforeBytes": 2825535,
+      "afterBytes": 344218,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 2.929,
+      "master": "art-source/runtime-mobile/originals/bosses/many-eyed-priest.png",
+      "runtime": "public/assets/bosses/many-eyed-priest-mobile.webp",
+      "masterSha256": "d1e5f28f34516a611ca0a9a364101844b0b32c92261284c572f6c3d46856def8"
+    },
+    {
+      "source": "/assets/bosses/tide-colossus.png",
+      "beforeBytes": 3075166,
+      "afterBytes": 419454,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 3.271,
+      "master": "art-source/runtime-mobile/originals/bosses/tide-colossus.png",
+      "runtime": "public/assets/bosses/tide-colossus-mobile.webp",
+      "masterSha256": "e7465c98a406de53def78f405d6e12a4222aba8c38e74544e18f086b5c3a0a7f"
+    },
+    {
+      "source": "/assets/character/linjin-base.png",
+      "beforeBytes": 640500,
+      "afterBytes": 52366,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 0.637,
+      "master": "art-source/characters/shared-master/body-optimized.png",
+      "runtime": "public/assets/character/linjin-base-mobile.webp",
+      "masterSha256": "85b5fb33b41ee43f5ec4368125c5c2147d243c9faa9a4abbf11d7bd7d9319a64"
+    },
+    {
+      "source": "/assets/character/raincoat-grip.png",
+      "beforeBytes": 25202,
+      "afterBytes": 5556,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 0.02,
+      "master": "art-source/characters/shared-master/grip-optimized.png",
+      "runtime": "public/assets/character/raincoat-grip-mobile.webp",
+      "masterSha256": "819dee915707b68097960d5957edefb41b03b7461a2daea1b4c2271a330128c6"
+    },
+    {
+      "source": "/assets/character/raincoat-layer.png",
+      "beforeBytes": 385119,
+      "afterBytes": 45304,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 0.48,
+      "master": "art-source/characters/shared-master/coat-optimized.png",
+      "runtime": "public/assets/character/raincoat-layer-mobile.webp",
+      "masterSha256": "ff85857547fadb8fab9e0e1e94ab9aa948cd95e14ca90fdedbd2b49ddee84c43"
+    },
+    {
+      "source": "/assets/dungeons/tide_colossus/boss-readable.webp",
+      "beforeBytes": 2070040,
+      "afterBytes": 462824,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 2.367,
+      "master": "art-source/dungeons/tide_colossus/boss-readable-master.png",
+      "runtime": "public/assets/dungeons/tide_colossus/boss-readable-mobile.webp",
+      "masterSha256": "f0b8e61b83205dc042121cb798ee96d0a748f18438848b484782188a8dc0acec",
+      "previousRuntimeSha256": "e000de44700ac8512cad913ffdb4d029b2c51f1e6419d05bc28dd10b82ed475e"
+    },
+    {
+      "source": "/assets/equipment/brass-revolver-icon.png",
+      "beforeBytes": 902317,
+      "afterBytes": 167720,
+      "dimensions": [
+        1211,
+        867
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.551,
+      "master": "art-source/equipment/skill-validation/brass-revolver-icon-optimized.png",
+      "runtime": "public/assets/equipment/brass-revolver-icon-mobile.webp",
+      "masterSha256": "34c7aedfc714d15aca6f3459652c6df9e0954c4568ffa9dc9dff60bd9dab7706"
+    },
+    {
+      "source": "/assets/equipment/diving-coat-icon.png",
+      "beforeBytes": 676438,
+      "afterBytes": 57434,
+      "dimensions": [
+        640,
+        912
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.407,
+      "master": "art-source/equipment/skill-validation/diving-coat-icon-optimized.png",
+      "runtime": "public/assets/equipment/diving-coat-icon-mobile.webp",
+      "masterSha256": "76be735510857315aa09cee7d814ef60fdb76947481ebc8991589e34b9b68908"
+    },
+    {
+      "source": "/assets/equipment/diving-coat-layer.png",
+      "beforeBytes": 445249,
+      "afterBytes": 51182,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 0.536,
+      "master": "art-source/equipment/skill-validation/diving-coat-layer-optimized.png",
+      "runtime": "public/assets/equipment/diving-coat-layer-mobile.webp",
+      "masterSha256": "90313c2daf97cbe371b62a6a0b6927f08747ec04ef280ebdf4457e8deb0070d0"
+    },
+    {
+      "source": "/assets/game/actors.webp",
+      "beforeBytes": 1283300,
+      "afterBytes": 468250,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.309,
+      "master": "art-source/startup-loading/actors.png",
+      "runtime": "public/assets/game/actors-mobile.webp",
+      "masterSha256": "3395221e35e3798f0bb579fc89ee892de010b299c41a18f89ba1b94ed45ef29a",
+      "previousRuntimeSha256": "985827676f6782cbe3c9712179d1f19edb193ae5aa1ac3cb672f052be259458c"
+    },
+    {
+      "source": "/assets/game/bosses.webp",
+      "beforeBytes": 1841716,
+      "afterBytes": 574648,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 2.076,
+      "master": "art-source/startup-loading/bosses.png",
+      "runtime": "public/assets/game/bosses-mobile.webp",
+      "masterSha256": "17b6be95dd3e3203822cbf820bfa8cfa4dd2a96e6b1907a10ee119d0f6d12573",
+      "previousRuntimeSha256": "34cbcde02b8096a427431d9fed0817663f4960a567f82dc3e461e952ebbfce16"
+    },
+    {
+      "source": "/assets/game/dockyard-arena-readable.png",
+      "beforeBytes": 2750454,
+      "afterBytes": 331932,
+      "dimensions": [
+        1145,
+        1374
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 2.852,
+      "master": "art-source/runtime-mobile/originals/game/dockyard-arena-readable.png",
+      "runtime": "public/assets/game/dockyard-arena-readable-mobile.webp",
+      "masterSha256": "eef5bcb2e6c23df87fee468b3e2abcd8b67420a87fb5a067f0e57d19e1267cd0"
+    },
+    {
+      "source": "/assets/game/enemies-readable.webp",
+      "beforeBytes": 1356790,
+      "afterBytes": 457550,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.523,
+      "master": "art-source/startup-loading/enemies-readable.png",
+      "runtime": "public/assets/game/enemies-readable-mobile.webp",
+      "masterSha256": "38c16043a704dbfa098d5d2b4a90bde4c33065e425026d2d2be4632a02546b18",
+      "previousRuntimeSha256": "8c99af54e8d030499a75c3a4040d113c6244c6eb577f7440216ddc4377a97356"
+    },
+    {
+      "source": "/assets/game/field-tools.webp",
+      "beforeBytes": 1244490,
+      "afterBytes": 367180,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.577,
+      "master": "art-source/startup-loading/field-tools.png",
+      "runtime": "public/assets/game/field-tools-mobile.webp",
+      "masterSha256": "386889330274233e6169b5a4527214fe1c591386207d3fde725ac0763fd361cc",
+      "previousRuntimeSha256": "bfce2e1fca42c9d7709bb1db1f9ec8b31aaddced6b2b4d44debf7d9ef1b73dc9"
+    },
+    {
+      "source": "/assets/game/items.webp",
+      "beforeBytes": 1487592,
+      "afterBytes": 438282,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.956,
+      "master": "art-source/startup-loading/items.png",
+      "runtime": "public/assets/game/items-mobile.webp",
+      "masterSha256": "fa6519f6528eab241855a2e92eee97d41e3a7cdb0d3d07bcf642f5d0706d0226",
+      "previousRuntimeSha256": "7a8b717461130da697d16d0e7c8b16d305cfc15f888a1687334ef0375c5de19d"
+    },
+    {
+      "source": "/assets/game/pier-ground.webp",
+      "beforeBytes": 2250110,
+      "afterBytes": 389454,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 3.245,
+      "master": "art-source/startup-loading/pier-ground.png",
+      "runtime": "public/assets/game/pier-ground-mobile.webp",
+      "masterSha256": "d85447d8c2e39a6d5992f66aa79dc9fd283781f9f9ac9ffc4e67e25270c8911a",
+      "previousRuntimeSha256": "1bebcbfdbe06ba360f500385a8b01f2c7b53d2fce7d180855a06487414b1588d"
+    },
+    {
+      "source": "/assets/lobby/brass-tools.webp",
+      "beforeBytes": 929628,
+      "afterBytes": 136218,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.426,
+      "master": "art-source/lobby/loading-optimization/brass-tools.png",
+      "runtime": "public/assets/lobby/brass-tools-mobile.webp",
+      "masterSha256": "35041f69c11abcef93931f30752aba5556bf017e0bc76d74bb76e878595c4736",
+      "previousRuntimeSha256": "6ab858abe573b7b57b8a2b8be718cd22b5a86acbc1bd02aeea1f21dc38cc2eaa"
+    },
+    {
+      "source": "/assets/lobby/cutaway-harbor.webp",
+      "beforeBytes": 1987422,
+      "afterBytes": 298248,
+      "dimensions": [
+        941,
+        1672
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 2.913,
+      "master": "art-source/lobby/loading-optimization/cutaway-harbor.png",
+      "runtime": "public/assets/lobby/cutaway-harbor-mobile.webp",
+      "masterSha256": "0de0bca41f298a391a62568fb8abd59e6f26466e85aeebd063753720a9c96636",
+      "previousRuntimeSha256": "dded3c061f7798f99bfc115d4a3e0bfb584f29294a2043f5893168fbff90d477"
+    },
+    {
+      "source": "/assets/lobby/departure-lantern.webp",
+      "beforeBytes": 1324670,
+      "afterBytes": 290722,
+      "dimensions": [
+        1145,
+        1374
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 1.798,
+      "master": "art-source/lobby/loading-optimization/departure-lantern.png",
+      "runtime": "public/assets/lobby/departure-lantern-mobile.webp",
+      "masterSha256": "7213fcf4781c1cfbb412d5497bd875b1ffcd6cc40ca664df6d2b325bc5b5b821",
+      "previousRuntimeSha256": "7ce10fa11222c2590d242528ce1c4c8d5810c149e8e8f0acda2feb4271adacb2"
+    },
+    {
+      "source": "/assets/lobby/investigator-cutaway.webp",
+      "beforeBytes": 797606,
+      "afterBytes": 75312,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 0.765,
+      "master": "art-source/lobby/loading-optimization/investigator-cutaway.png",
+      "runtime": "public/assets/lobby/investigator-cutaway-mobile.webp",
+      "masterSha256": "02467d55d252d49d22aeaed21176034fb0bd1caf2bb39990680e10c6250ab35b",
+      "previousRuntimeSha256": "2937f99a65d8ec33943bfcc66b144afc4466332f7394c17a71f0b35cad44b1d2"
+    },
+    {
+      "source": "/assets/map/voyage-boss-biomes-v3.webp",
+      "beforeBytes": 2256654,
+      "afterBytes": 394004,
+      "dimensions": [
+        724,
+        2172
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 3.008,
+      "master": "art-source/world-map/boss-biomes-v3-master.png",
+      "runtime": "public/assets/map/voyage-boss-biomes-v3-mobile.webp",
+      "masterSha256": "e82f923aa961b991eeee553db7cc059c9e3344fe2662a1e9b10b829ef054dda9",
+      "previousRuntimeSha256": "491b237a5599b1be877976326bf312b86d88014ca3713e766da726d583ecc1c8"
+    },
+    {
+      "source": "/assets/ui/brass-panel.webp",
+      "beforeBytes": 1627304,
+      "afterBytes": 154634,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 2.35,
+      "master": "art-source/startup-loading/brass-panel.png",
+      "runtime": "public/assets/ui/brass-panel-mobile.webp",
+      "masterSha256": "9bf2225f52a220444fb71f3898c0e7ca09a2a8af68d63ff72e793e8710576c87",
+      "previousRuntimeSha256": "898727532facb5c7a47c71b0f8def9178a1b43e8875d8cc60bae214a2155a460"
+    },
+    {
+      "source": "/assets/ui/harbor-mystery-frame.webp",
+      "beforeBytes": 730094,
+      "afterBytes": 175820,
+      "dimensions": [
+        887,
+        1774
+      ],
+      "alphaEqual": true,
+      "visibleMAE": 0.95,
+      "master": "art-source/ui/harbor-mystery/master.png",
+      "runtime": "public/assets/ui/harbor-mystery-frame-mobile.webp",
+      "masterSha256": "7e01b1da4553e040f71b643db1193bfde1ca3e78dc729a8bde87515fd73c898f",
+      "previousRuntimeSha256": "426047cc79485c64f59f8f4723b540e3c2b704ccc21728324d9026f9f6b9ade5"
+    }
+  ]
+}

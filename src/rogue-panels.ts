@@ -4,8 +4,8 @@ import { CAREERS, maxHealth, careerStats } from './model.ts';
 import { EQUIPMENT, EQUIPMENT_UPGRADES, SKILLS } from './roguelite.ts';
 import type { EquipmentId, SkillId } from './roguelite.ts';
 const equipmentImages: Partial<Record<EquipmentId, string>> = {
-  diving_coat: '/assets/equipment/diving-coat-icon.png',
-  brass_revolver: '/assets/equipment/brass-revolver-icon.png',
+  diving_coat: '/assets/equipment/diving-coat-icon-mobile.webp',
+  brass_revolver: '/assets/equipment/brass-revolver-icon-mobile.webp',
 };
 const btn=(action:string,label:string,value='',disabled=false)=>`<button class="button button-secondary" data-action="${action}" data-value="${value}"${disabled?' disabled':''}>${label}</button>`;
 const art=(key:string,icon:(key:string)=>string)=>`<img src="${icon(key)}" alt="">`;

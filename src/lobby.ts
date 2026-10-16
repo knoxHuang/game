@@ -17,7 +17,7 @@ export type LobbyToolId = typeof tools[number]['id'];
 export function lobbyToolIcon(id: LobbyToolId): string {
   const { box: [x,y,right,bottom] } = tools.find(tool => tool.id === id)!;
   const width=right-x, height=bottom-y;
-  return `<span class="lobby-tool-art lobby-tool-art-inline" aria-hidden="true"><img src="/assets/lobby/brass-tools.webp" alt="" style="width:${1254/width*100}%;height:${1254/height*100}%;left:${-x/width*100}%;top:${-y/height*100}%"></span>`;
+  return `<span class="lobby-tool-art lobby-tool-art-inline" aria-hidden="true"><img src="/assets/lobby/brass-tools-mobile.webp" alt="" style="width:${1254/width*100}%;height:${1254/height*100}%;left:${-x/width*100}%;top:${-y/height*100}%"></span>`;
 }
 const illustratedTools = (ready: number) => tools.map(({ id, label, action }) => {
   return `<button type="button" class="lobby-game-tool" data-action="${action}" aria-label="${label}">${lobbyToolIcon(id)}<small>${label}</small>${label==='案件'&&ready?`<i class="lobby-tool-badge">${ready}</i>`:''}</button>`;
@@ -30,12 +30,12 @@ export function renderLobby(s: GameState): string {
   const lamps = [[39,12,0],[33,35,0.8],[59,35,1.7],[5,57,0.4],[37,65,1.2],[39,81,2.1],[85,84,0.6]];
   return `<div class="lobby-scene" data-focus="" data-reduced="${s.settings.reducedMotion}" aria-label="多层雾港调查所">
     <div class="lobby-stage">
-      <img class="lobby-background" src="/assets/lobby/cutaway-harbor.webp" alt="雨夜中的多层调查所：楼上望远镜与空白木牌，中层委托和档案，下层整备和扩建" decoding="async" fetchpriority="high">
+      <img class="lobby-background" src="/assets/lobby/cutaway-harbor-mobile.webp" alt="雨夜中的多层调查所：楼上望远镜与空白木牌，中层委托和档案，下层整备和扩建" decoding="async" fetchpriority="high">
       <div class="lobby-weather" aria-hidden="true"><i class="lobby-rain"></i><i class="lobby-fog"></i></div>
       <div class="lobby-sea" aria-hidden="true"></div>
       ${lamps.map(([x,y,delay]) => `<i class="lobby-lamp" style="left:${x}%;top:${y}%;--delay:-${delay}s" aria-hidden="true"><i></i></i>`).join('')}
       <span class="lobby-hero-shadow" aria-hidden="true"></span>
-      <span class="lobby-hero" aria-label="外勤调查员待机"><img src="/assets/lobby/investigator-cutaway.webp" alt="" decoding="async"></span>
+      <span class="lobby-hero" aria-label="外勤调查员待机"><img src="/assets/lobby/investigator-cutaway-mobile.webp" alt="" decoding="async"></span>
       <div class="lobby-dust" aria-hidden="true">${[12,24,42,55,67,81].map((x,i)=>`<i style="left:${x}%;--delay:-${i*1.8}s"></i>`).join('')}</div>
       ${hotspot('quests','npc','委托',questHint,'ali',aliReady ? '✓' : '!')}
       ${hotspot('archives','panel:warehouse','档案','查看证物与材料档案')}
@@ -45,7 +45,7 @@ export function renderLobby(s: GameState): string {
       <div class="lobby-footer">
         <nav class="lobby-game-tools" aria-label="调查所快捷操作">${illustratedTools(ready.length)}</nav>
         <button type="button" class="lobby-departure" data-action="panel:prepare" aria-label="出发 · 选择 Boss 副本">
-          <span class="lobby-lantern-art" aria-hidden="true"><img src="/assets/lobby/departure-lantern.webp" alt=""></span>
+          <span class="lobby-lantern-art" aria-hidden="true"><img src="/assets/lobby/departure-lantern-mobile.webp" alt=""></span>
           <i class="lobby-lantern-glow" aria-hidden="true"></i><i class="lobby-lantern-flame" aria-hidden="true"></i>
           <strong class="lobby-departure-label">出发</strong>
         </button>
@@ -63,8 +63,11 @@ export class LobbyInteractions {
     screen.addEventListener('error', () => this.updateImageStatus(), true);
     screen.addEventListener('click', event => {
       if (!(event.target instanceof Element) || !event.target.closest('[data-lobby-retry]')) return;
+      const retry = String(Date.now());
       for (const image of screen.querySelectorAll<HTMLImageElement>('.lobby-scene img')) {
-        if (image.complete && !image.naturalWidth) image.src = image.src;
+        if (image.complete && !image.naturalWidth) {
+          const url = new URL(image.src); url.searchParams.set('retry', retry); image.src = url.href;
+        }
       }
       this.updateImageStatus();
     });

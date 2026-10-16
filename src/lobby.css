@@ -1,7 +1,7 @@
 /* Layered game lobby: percentages follow the approved cutaway artwork. */
 #screen[data-lobby="true"] { inset: var(--top-safe) 0 var(--bottom-safe); pointer-events: auto; }
 .lobby-scene { position: absolute; inset: 0; overflow: clip; isolation: isolate; background: #09151c; }
-.lobby-scene::before { content: ""; position: absolute; inset: -30px; background: url('/assets/lobby/cutaway-harbor.webp') center/cover; filter: blur(18px) brightness(.38); }
+.lobby-scene::before { content: ""; position: absolute; inset: -30px; background: url('/assets/lobby/cutaway-harbor-mobile.webp') center/cover; filter: blur(18px) brightness(.38); }
 .lobby-stage { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); container-type: inline-size; }
 .lobby-background { display: block; width: 100%; height: 100%; pointer-events: none; }
 .lobby-loading { position: absolute; z-index: 6; bottom: 112px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); padding: 8px 12px; border: 1px solid #957343; background: #101c23f5; color: #ead5a0; font-size: 14px; text-align: center; }
@@ -85,7 +85,7 @@
 @media (prefers-reduced-motion: reduce) { .lobby-scene *, .lobby-scene *::before { animation: none !important; transition: none !important; } .lobby-rain,.lobby-dust { display: none; } }
 @media (max-height: 560px) { .lobby-title strong { font-size: 17px; } .lobby-title small { font-size: 11px; } }
 
-.lobby-resource-art { display: block; width: 20px; height: 22px; background-image: url('/assets/game/items.webp'); background-size: 400% 400%; background-repeat: no-repeat; }
+.lobby-resource-art { display: block; width: 20px; height: 22px; background-image: url('/assets/game/items-mobile.webp'); background-size: 400% 400%; background-repeat: no-repeat; }
 .resource-gold { background-position: 66.6667% 33.3333%; }
 .resource-sample { background-position: 66.6667% 0; }
 .resource-parts { background-position: 100% 0; }

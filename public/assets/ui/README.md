@@ -1,3 +1,7 @@
+## 当前运行资源（2026-10-16）
+
+用户已允许运行图采用有损压缩以优先改善手机加载。当前运行文件统一使用 `-mobile.webp`，保持原尺寸和透明通道；原稿位置、逐项映射和校验见 `art-source/runtime-mobile/compression.json`。下文PNG及无损WebP记录保留为制作历史，不再作为运行路径。大厅确认参考图 `cutaway-harbor.png` 仍保留。
+
 # 游戏界面共用美术
 
 当前战斗界面使用 `harbor-mystery-frame.webp`（887×1774）：同张透明母图中的顶部、侧缘和底座。依据已确认大厅、实际战斗和共用木铜面板生成，使用一致的旧木、锈铜、绳索、暖提灯和冷海色；神秘影响通过三处残缺海图刻线和潮痕表达。九宫格缩放保留透明战场，数值与双技能图标仍由真实状态绘制。母图、底稿、提示词及无损验证见 `art-source/ui/harbor-mystery/README.md`；截图见 `artifacts/harbor-mystery/`。

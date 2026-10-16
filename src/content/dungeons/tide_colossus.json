@@ -25,7 +25,7 @@
     "reviewed": false
   },
   "art": {
-    "portrait": "/assets/bosses/tide-colossus.png",
+    "portrait": "/assets/bosses/tide-colossus-mobile.webp",
     "card": null,
     "brief": "原创污染规则：钙化硬壳、藤壶侵蚀船坞、拖拽痕迹与反常潮线。本轮只完成世界海图环境，独立战区与完整动作资源仍待补齐。",
     "reviewed": false
@@ -312,7 +312,7 @@
       "x": 10,
       "y": 14
     },
-    "background": "/assets/game/dockyard-arena-readable.png",
+    "background": "/assets/game/dockyard-arena-readable-mobile.webp",
     "obstacles": [
       {
         "x": 6,

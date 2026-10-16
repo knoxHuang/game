@@ -1,3 +1,7 @@
+## 当前运行资源（2026-10-16）
+
+用户已允许运行图采用有损压缩以优先改善手机加载。当前运行文件统一使用 `-mobile.webp`，保持原尺寸和透明通道；原稿位置、逐项映射和校验见 `art-source/runtime-mobile/compression.json`。下文PNG及无损WebP记录保留为制作历史，不再作为运行路径。大厅确认参考图 `cutaway-harbor.png` 仍保留。
+
 # Boss 调查画像
 
 由内置 ImageGen 生成，使用 `../lobby/cutaway-harbor.png` 作为唯一画风参考。三张图片均为 1254 × 1254，不透明原始 PNG。用于副本海图标记与所选目标档案，不作为战斗动画贴图。

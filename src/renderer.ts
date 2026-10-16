@@ -33,6 +33,7 @@ class WorldScene extends Phaser.Scene {
   private loadedDungeons = new Set<string>();
   private loadingDungeon: string | null = null;
   private failedDungeon: string | null = null;
+  private startupRetry = '';
   private ox = 0;
   private oy = 0;
   constructor(private read: () => GameState | null, private mode: () => RenderMode, private frame: (dt: number) => void, private ready: () => void, private assetProgress: AssetProgress) { super('world'); }
@@ -44,8 +45,9 @@ class WorldScene extends Phaser.Scene {
     this.reportAssetProgress();
     this.load.on('filecomplete', this.reportAssetProgress);
     this.load.once('complete', () => this.load.off('filecomplete', this.reportAssetProgress));
-    preloadArt(this);
+    preloadArt(this, this.startupRetry);
   }
+  retryStartupAssets() { this.startupRetry = String(Date.now()); this.scene.restart(); }
   create() {
     const keys = Object.keys(STARTUP_ART), missing = keys.filter(key => !this.textures.exists(key));
     if (missing.length) { this.assetProgress(keys.length - missing.length, keys.length, missing.length); return; }
@@ -132,7 +134,7 @@ class WorldScene extends Phaser.Scene {
       const background=arena.background?assetKey(run.boss,'background'):definition.biome.floorArt.type==='image'?assetKey(run.boss,'floorArt'):'pier-ground';
       const ground=this.add.image(fullWidth/2,fullHeight/2,background).setDisplaySize(fullWidth,fullHeight);this.staticLayer.add(ground);
       // Continue the authored sea beyond the finite pier without stretching the arena or moving its bounds.
-      if(arena.background==='/assets/game/dockyard-arena-readable.png'){
+      if(arena.background==='/assets/game/dockyard-arena-readable-mobile.webp'){
         const texture=this.textures.get(background),source=texture.getSourceImage();
         const seaTop=Math.floor(source.height*.95);
         if(!texture.has('sea-margin')){
@@ -145,7 +147,7 @@ class WorldScene extends Phaser.Scene {
         this.staticLayer.add(sea);
       }
       // The first arena has an authored neutral floor; preserve its value hierarchy.
-      if(arena.background!=='/assets/game/dockyard-arena-readable.png')ground.setTint(0x829297);
+      if(arena.background!=='/assets/game/dockyard-arena-readable-mobile.webp')ground.setTint(0x829297);
       for(const obstacle of arena.obstacles)this.tileImage(definition.biome.obstacleArt.type==='image'?assetKey(run.boss,'obstacleArt'):'rock',(obstacle.x-.5)*this.tile,(obstacle.y-.5)*this.tile,this.tile*1.15,0x8c9c9d);
       if(definition.biome.wallArt.type==='image'){
         for(let y=1;y<=arena.height;y++)for(const x of [1,arena.width])this.tileImage(assetKey(run.boss,'wallArt'),(x-.5)*this.tile,(y-.5)*this.tile,this.tile,colorNumber(definition.biome.wall));
@@ -382,7 +384,7 @@ export class Renderer {
   constructor(element: HTMLElement, state: () => GameState | null, mode: () => RenderMode, frame: (dt: number) => void, ready: () => void, assetProgress: AssetProgress) {
     this.scene = new WorldScene(state, mode, frame, ready, assetProgress);
     // Keep decoded image URLs reusable by the HTML lobby instead of XHR blob URLs.
-    this.game = new Phaser.Game({ type: Phaser.AUTO, parent: element, width: element.clientWidth || 360, height: element.clientHeight || 500, backgroundColor: '#17232c', pixelArt: true, antialias: false, scene: this.scene, loader: { imageLoadType: 'HTMLImageElement', maxRetries: 1 }, input: { keyboard: false, mouse: false, touch: false }, banner: false, audio: { noAudio: true } });
+    this.game = new Phaser.Game({ type: Phaser.AUTO, parent: element, width: element.clientWidth || 360, height: element.clientHeight || 500, backgroundColor: '#17232c', pixelArt: true, antialias: false, scene: this.scene, loader: { imageLoadType: 'HTMLImageElement', maxParallelDownloads: 4, maxRetries: 1 }, input: { keyboard: false, mouse: false, touch: false }, banner: false, audio: { noAudio: true } });
     this.observer = new ResizeObserver(() => { if (element.clientWidth && element.clientHeight) this.game.scale.resize(element.clientWidth, element.clientHeight); });
     this.observer.observe(element);
   }
@@ -396,6 +398,6 @@ export class Renderer {
     return url;
   }
   event(event: GameEvent) { this.scene.showEvent(event); }
-  retryAssets() { this.scene.scene.restart(); }
+  retryAssets() { this.scene.retryStartupAssets(); }
   destroy() { this.observer.disconnect(); this.game.destroy(true); }
 }

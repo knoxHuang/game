@@ -11,24 +11,24 @@ export const actorKey = (kind: Kind, direction: Direction, frame = -1, _tier = 0
 export const ITEM_KEYS = ['weapon','armor','crystal','iron','radio','medkit','seal','scroll','device','lamp','chest','rock','compass','bag','chart','workbench'] as const;
 
 export const STARTUP_ART = {
-  'lobby-cutaway': '/assets/lobby/cutaway-harbor.webp',
-  'lobby-investigator': '/assets/lobby/investigator-cutaway.webp',
-  'lobby-tools': '/assets/lobby/brass-tools.webp',
-  'lobby-lantern': '/assets/lobby/departure-lantern.webp',
-  'ui-panel': '/assets/ui/brass-panel.webp',
-  'battle-hud-frame': '/assets/ui/harbor-mystery-frame.webp',
-  'actor-atlas': '/assets/game/actors.webp',
-  'enemy-atlas': '/assets/game/enemies-readable.webp',
-  'item-atlas': '/assets/game/items.webp',
-  'field-atlas': '/assets/game/field-tools.webp',
-  'boss-atlas': '/assets/game/bosses.webp',
-  'tide-boss-readable': '/assets/dungeons/tide_colossus/boss-readable.webp',
-  'pier-ground': '/assets/game/pier-ground.webp',
+  'lobby-cutaway': '/assets/lobby/cutaway-harbor-mobile.webp',
+  'lobby-investigator': '/assets/lobby/investigator-cutaway-mobile.webp',
+  'lobby-tools': '/assets/lobby/brass-tools-mobile.webp',
+  'lobby-lantern': '/assets/lobby/departure-lantern-mobile.webp',
+  'ui-panel': '/assets/ui/brass-panel-mobile.webp',
+  'battle-hud-frame': '/assets/ui/harbor-mystery-frame-mobile.webp',
+  'actor-atlas': '/assets/game/actors-mobile.webp',
+  'enemy-atlas': '/assets/game/enemies-readable-mobile.webp',
+  'item-atlas': '/assets/game/items-mobile.webp',
+  'field-atlas': '/assets/game/field-tools-mobile.webp',
+  'boss-atlas': '/assets/game/bosses-mobile.webp',
+  'tide-boss-readable': '/assets/dungeons/tide_colossus/boss-readable-mobile.webp',
+  'pier-ground': '/assets/game/pier-ground-mobile.webp',
 } as const;
 
-export function preloadArt(scene: Phaser.Scene): void {
+export function preloadArt(scene: Phaser.Scene, retry = ''): void {
   for (const [key, src] of Object.entries(STARTUP_ART)) {
-    if (!scene.textures.exists(key)) scene.load.image(key, src);
+    if (!scene.textures.exists(key)) scene.load.image(key, retry ? `${src}?retry=${retry}` : src);
   }
 }
 

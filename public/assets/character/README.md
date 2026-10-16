@@ -1,3 +1,7 @@
+## 当前运行资源（2026-10-16）
+
+用户已允许运行图采用有损压缩以优先改善手机加载。当前运行文件统一使用 `-mobile.webp`，保持原尺寸和透明通道；原稿位置、逐项映射和校验见 `art-source/runtime-mobile/compression.json`。下文PNG及无损WebP记录保留为制作历史，不再作为运行路径。大厅确认参考图 `cutaway-harbor.png` 仍保留。
+
 # 林烬整备立绘
 
 当前版本（2026-10-16）：已切换为固定坐标的完整内搭、雨衣与握帽前景三层。三个竖屏尺寸及穿脱已在浏览器验证；截图和来源见 [`shared-master`](../../../art-source/characters/shared-master/README.md)。下方提示词记录保留生成历史，不代表本次重新生成。
