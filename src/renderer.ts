@@ -6,7 +6,7 @@ import { battleCamera, BATTLE_HUD_HEIGHT, BOSS_HUD_HEIGHT } from './battle-camer
 import { dungeon, enemyDefinition, assetKey, bossAttack } from './content/registry.ts';
 import { colorNumber } from './content/schema.ts';
 import Phaser from 'phaser';
-import { actorKey, createTextures, preloadArt, enemyArt, queueDungeonArt } from './art.ts';
+import { actorKey, createTextures, preloadArt, enemyArt, queueDungeonArt, STARTUP_ART } from './art.ts';
 import { BOSSES, careerStats, QUESTS } from './model.ts';
 import type { Direction, GameState, Vec } from './model.ts';
 import { direction } from './geometry.ts';
@@ -14,6 +14,7 @@ import { enemyRadius, nearbyInteraction, targetableEnemy } from './engine.ts';
 import type { GameEvent } from './engine.ts';
 
 export type RenderMode = 'home' | 'shop' | 'run' | 'result';
+type AssetProgress = (loaded: number, total: number, failed: number) => void;
 const facing = (a: number): Direction => Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? Math.cos(a) > 0 ? 'right' : 'left' : Math.sin(a) > 0 ? 'down' : 'up';
 const COLORS = { ink: 0x17232c, gold: 0xd8b66a, teal: 0x54c7bc, danger: 0xd16b62, arcane: 0xb66bd3, muted: 0x929b9c, stone: 0x2c363c };
 
@@ -34,9 +35,20 @@ class WorldScene extends Phaser.Scene {
   private failedDungeon: string | null = null;
   private ox = 0;
   private oy = 0;
-  constructor(private read: () => GameState | null, private mode: () => RenderMode, private frame: (dt: number) => void, private ready: () => void) { super('world'); }
-  preload() { this.load.image('lobby-cutaway', '/assets/lobby/cutaway-harbor.png'); this.load.image('battle-hud-frame', '/assets/ui/harbor-mystery-frame.webp'); preloadArt(this); }
+  constructor(private read: () => GameState | null, private mode: () => RenderMode, private frame: (dt: number) => void, private ready: () => void, private assetProgress: AssetProgress) { super('world'); }
+  private reportAssetProgress = () => {
+    const keys = Object.keys(STARTUP_ART);
+    this.assetProgress(keys.filter(key => this.textures.exists(key)).length, keys.length, 0);
+  };
+  preload() {
+    this.reportAssetProgress();
+    this.load.on('filecomplete', this.reportAssetProgress);
+    this.load.once('complete', () => this.load.off('filecomplete', this.reportAssetProgress));
+    preloadArt(this);
+  }
   create() {
+    const keys = Object.keys(STARTUP_ART), missing = keys.filter(key => !this.textures.exists(key));
+    if (missing.length) { this.assetProgress(keys.length - missing.length, keys.length, missing.length); return; }
     createTextures(this);
     this.staticLayer = this.add.container(0, 0);
     this.shadows = this.add.graphics().setDepth(10);
@@ -65,6 +77,7 @@ class WorldScene extends Phaser.Scene {
     this.load.start();return false;
   }
   update(_time: number, delta: number) {
+    if (!this.staticLayer) return;
     const before=this.read();
     if(this.mode()==='run' && before?.run && !this.dungeonArtReady(before.run.boss))return;
     this.frame(delta / 1000);
@@ -366,9 +379,10 @@ export class Renderer {
   private scene: WorldScene;
   private observer: ResizeObserver;
   private icons = new Map<string,string>();
-  constructor(element: HTMLElement, state: () => GameState | null, mode: () => RenderMode, frame: (dt: number) => void, ready: () => void) {
-    this.scene = new WorldScene(state, mode, frame, ready);
-    this.game = new Phaser.Game({ type: Phaser.AUTO, parent: element, width: element.clientWidth || 360, height: element.clientHeight || 500, backgroundColor: '#17232c', pixelArt: true, antialias: false, scene: this.scene, input: { keyboard: false, mouse: false, touch: false }, banner: false, audio: { noAudio: true } });
+  constructor(element: HTMLElement, state: () => GameState | null, mode: () => RenderMode, frame: (dt: number) => void, ready: () => void, assetProgress: AssetProgress) {
+    this.scene = new WorldScene(state, mode, frame, ready, assetProgress);
+    // Keep decoded image URLs reusable by the HTML lobby instead of XHR blob URLs.
+    this.game = new Phaser.Game({ type: Phaser.AUTO, parent: element, width: element.clientWidth || 360, height: element.clientHeight || 500, backgroundColor: '#17232c', pixelArt: true, antialias: false, scene: this.scene, loader: { imageLoadType: 'HTMLImageElement', maxRetries: 1 }, input: { keyboard: false, mouse: false, touch: false }, banner: false, audio: { noAudio: true } });
     this.observer = new ResizeObserver(() => { if (element.clientWidth && element.clientHeight) this.game.scale.resize(element.clientWidth, element.clientHeight); });
     this.observer.observe(element);
   }
@@ -382,5 +396,6 @@ export class Renderer {
     return url;
   }
   event(event: GameEvent) { this.scene.showEvent(event); }
+  retryAssets() { this.scene.scene.restart(); }
   destroy() { this.observer.disconnect(); this.game.destroy(true); }
 }

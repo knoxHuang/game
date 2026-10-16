@@ -12,7 +12,7 @@
 .loadout-identity { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin: 0 1px 10px; }
 .loadout-identity > strong { color: var(--gold-bright); font: 600 23px/1.3 var(--game-display); }
 .loadout-identity > span { font-size: 14px; color: var(--game-muted); }
-.loadout-stage { position: relative; display: grid; grid-template-columns: 72px minmax(0,1fr) 72px; grid-template-rows: 94px 94px; gap: 10px; padding: 14px 10px; border: 5px solid var(--game-metal-dark); border-image: var(--game-frame) 210 / 7px / 0 stretch; background: radial-gradient(ellipse at 50% 55%,#f2bf5c33,transparent 62%),linear-gradient(#121c19cc,#10231ed9),url('/assets/lobby/cutaway-harbor.png') 26% 75%/200% auto; }
+.loadout-stage { position: relative; display: grid; grid-template-columns: 72px minmax(0,1fr) 72px; grid-template-rows: 94px 94px; gap: 10px; padding: 14px 10px; border: 5px solid var(--game-metal-dark); border-image: var(--game-frame) 210 / 7px / 0 stretch; background: radial-gradient(ellipse at 50% 55%,#f2bf5c33,transparent 62%),linear-gradient(#121c19cc,#10231ed9),url('/assets/lobby/cutaway-harbor.webp') 26% 75%/200% auto; }
 .loadout-slot { position: relative; z-index: 1; display: grid; grid-template-rows: 18px minmax(0,1fr) 18px; justify-items: center; gap: 2px; width: 100%; min-width: 48px; min-height: 48px; padding: 5px 3px; border: 4px solid #705431; border-image: var(--game-frame) 210 / 5px / 0 stretch; color: var(--game-ivory); background: linear-gradient(#253127ef,#141e18f5); box-shadow: inset 0 0 0 1px #bc965638,0 3px 5px #0008; cursor: pointer; touch-action: manipulation; }
 .loadout-slot-label { font: 600 14px/18px var(--game-display); color: var(--gold-bright); }
 .loadout-slot-state { font-size: 14px; line-height: 18px; white-space: nowrap; color: #c6bda5; }
@@ -47,7 +47,7 @@
 .profession-selector strong { font: 600 15px/1.4 var(--game-display); }
 .profession-selector small { position: absolute; right: 2px; top: 2px; color: #e4c68a; font-size: 12px; }
 .profession-selector:is(.is-selected,:focus-visible) { border-color: #e3bd72; outline: 1px solid #e3bd72; outline-offset: 1px; color: #ffe1a1; background: linear-gradient(#64502c,#243127); }
-.profession-showcase { display: grid; grid-template-columns: 55% 45%; align-items: center; min-height: 230px; border: 5px solid #705431; border-image: var(--game-frame) 210 / 7px / 0 stretch; overflow: hidden; background: radial-gradient(ellipse at 35% 60%,#c7a34938,transparent 60%),linear-gradient(#10221de8,#14231be8),url('/assets/lobby/cutaway-harbor.png') 26% 75%/200% auto; }
+.profession-showcase { display: grid; grid-template-columns: 55% 45%; align-items: center; min-height: 230px; border: 5px solid #705431; border-image: var(--game-frame) 210 / 7px / 0 stretch; overflow: hidden; background: radial-gradient(ellipse at 35% 60%,#c7a34938,transparent 60%),linear-gradient(#10221de8,#14231be8),url('/assets/lobby/cutaway-harbor.webp') 26% 75%/200% auto; }
 .profession-portrait { position: relative; height: 230px; display: grid; place-items: center; }
 .profession-portrait > .character-paperdoll { filter: drop-shadow(0 5px 5px #000a); }
 .profession-weapon-label { display: flex; align-items: center; gap: 5px; }

@@ -372,8 +372,28 @@ function frame(delta:number) {
 }
 
 async function bootstrap() {
-  renderer=new Renderer(document.querySelector<HTMLElement>('#scene')!,()=>state,()=>resolveRenderMode(),frame,()=>view.refreshAssets());
+  const loading = document.querySelector<HTMLElement>('#startup-loading')!;
+  const progress = loading.querySelector<HTMLProgressElement>('progress')!;
+  const message = loading.querySelector<HTMLElement>('[data-startup-message]')!;
+  const retry = loading.querySelector<HTMLButtonElement>('button')!;
+  retry.addEventListener('click', () => {
+    retry.hidden = true;
+    renderer?.retryAssets();
+  });
+  await new Promise<void>(resolve => {
+    renderer=new Renderer(document.querySelector<HTMLElement>('#scene')!,()=>state,()=>resolveRenderMode(),frame,()=>{
+      view.refreshAssets();
+      message.textContent = '图像已就绪，正在读取调查记录…';
+      resolve();
+    },(loaded,total,failed)=>{
+      progress.max = total;
+      progress.value = loaded;
+      message.textContent = failed ? `${failed} 项资源加载失败。请检查网络后重试。` : loaded === total ? '资源已载入，正在整理场景…' : `正在载入图像资源 ${loaded} / ${total}（${Math.floor(loaded / total * 100)}%）`;
+      retry.hidden = !failed;
+    });
+  });
   await openStoredGame();
+  loading.remove();
   const heartbeat=window.setInterval(()=>view.refresh(),120);
   window.addEventListener('pagehide',()=>{window.clearInterval(heartbeat);keys.clear();input=emptyInput();if(state&&storeOpened)void store.save(structuredClone(state)).catch(()=>{});audio.dispose();renderer?.destroy();},{once:true});
   document.addEventListener('visibilitychange',()=>{

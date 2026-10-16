@@ -10,14 +10,26 @@ export const bossArtKey = (id: BossId) => `boss-${id}`;
 export const actorKey = (kind: Kind, direction: Direction, frame = -1, _tier = 0) => `${kind}-${direction}${frame < 0 ? '' : `-walk-${frame % 4}`}`;
 export const ITEM_KEYS = ['weapon','armor','crystal','iron','radio','medkit','seal','scroll','device','lamp','chest','rock','compass','bag','chart','workbench'] as const;
 
+export const STARTUP_ART = {
+  'lobby-cutaway': '/assets/lobby/cutaway-harbor.webp',
+  'lobby-investigator': '/assets/lobby/investigator-cutaway.webp',
+  'lobby-tools': '/assets/lobby/brass-tools.webp',
+  'lobby-lantern': '/assets/lobby/departure-lantern.webp',
+  'ui-panel': '/assets/ui/brass-panel.webp',
+  'battle-hud-frame': '/assets/ui/harbor-mystery-frame.webp',
+  'actor-atlas': '/assets/game/actors.webp',
+  'enemy-atlas': '/assets/game/enemies-readable.webp',
+  'item-atlas': '/assets/game/items.webp',
+  'field-atlas': '/assets/game/field-tools.webp',
+  'boss-atlas': '/assets/game/bosses.webp',
+  'tide-boss-readable': '/assets/dungeons/tide_colossus/boss-readable.webp',
+  'pier-ground': '/assets/game/pier-ground.webp',
+} as const;
+
 export function preloadArt(scene: Phaser.Scene): void {
-  scene.load.image('actor-atlas','/assets/game/actors.png');
-  scene.load.image('enemy-atlas','/assets/game/enemies-readable.png');
-  scene.load.image('item-atlas','/assets/game/items.png');
-  scene.load.image('field-atlas','/assets/game/field-tools.png');
-  scene.load.image('boss-atlas','/assets/game/bosses.png');
-  scene.load.image('tide-boss-readable','/assets/dungeons/tide_colossus/boss-readable.webp');
-  scene.load.image('pier-ground','/assets/game/pier-ground.png');
+  for (const [key, src] of Object.entries(STARTUP_ART)) {
+    if (!scene.textures.exists(key)) scene.load.image(key, src);
+  }
 }
 
 // Queue only the selected pack. Other dungeons do not add battle downloads to startup.

@@ -1,0 +1,49 @@
+{
+  "tool": "cwebp -lossless -exact -m 6",
+  "assets": [
+    {
+      "source": "brass-tools.png",
+      "runtime": "public/assets/lobby/brass-tools.webp",
+      "beforeBytes": 1233049,
+      "afterBytes": 929628,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "cutaway-harbor.png",
+      "runtime": "public/assets/lobby/cutaway-harbor.webp",
+      "beforeBytes": 2521517,
+      "afterBytes": 1987422,
+      "dimensions": [
+        941,
+        1672
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "departure-lantern.png",
+      "runtime": "public/assets/lobby/departure-lantern.webp",
+      "beforeBytes": 1645821,
+      "afterBytes": 1324670,
+      "dimensions": [
+        1145,
+        1374
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "investigator-cutaway.png",
+      "runtime": "public/assets/lobby/investigator-cutaway.webp",
+      "beforeBytes": 1061112,
+      "afterBytes": 797606,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "rgbaEqual": true
+    }
+  ]
+}

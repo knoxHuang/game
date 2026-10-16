@@ -1,0 +1,82 @@
+{
+  "tool": "cwebp -lossless -exact -m 6",
+  "assets": [
+    {
+      "source": "actors.png",
+      "runtime": "public/assets/game/actors.webp",
+      "beforeBytes": 1613285,
+      "afterBytes": 1283300,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "enemies-readable.png",
+      "runtime": "public/assets/game/enemies-readable.webp",
+      "beforeBytes": 1722849,
+      "afterBytes": 1356790,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "items.png",
+      "runtime": "public/assets/game/items.webp",
+      "beforeBytes": 1974329,
+      "afterBytes": 1487592,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "field-tools.png",
+      "runtime": "public/assets/game/field-tools.webp",
+      "beforeBytes": 1632962,
+      "afterBytes": 1244490,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "bosses.png",
+      "runtime": "public/assets/game/bosses.webp",
+      "beforeBytes": 2440175,
+      "afterBytes": 1841716,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "pier-ground.png",
+      "runtime": "public/assets/game/pier-ground.webp",
+      "beforeBytes": 2926645,
+      "afterBytes": 2250110,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "rgbaEqual": true
+    },
+    {
+      "source": "brass-panel.png",
+      "runtime": "public/assets/ui/brass-panel.webp",
+      "beforeBytes": 2000354,
+      "afterBytes": 1627304,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "rgbaEqual": true
+    }
+  ]
+}
