@@ -26,7 +26,7 @@ test('三种竖屏均有周围随机安全预警，出生前没有攻击者',()=
  advance(s,.9,viewport);assert.equal(aliveEnemies(r).length,4);}
 });
 test('第五波在场地各角出现，不受设施等级或残敌影响',()=>{
- for(const pos of [{x:3,y:3},{x:17,y:3},{x:3,y:21},{x:17,y:21}]){const s=state(),r=s.run!;advance(s,5.9);r.player.pos=pos;skipToBoss(s);assert.equal(r.battle!.wave,5);assert.ok(aliveEnemies(r).some(e=>e.kind==='guardian'));assert.ok(aliveEnemies(r).some(e=>e.kind==='beast'));}
+ for(const pos of [{x:3,y:3.1},{x:17,y:3.1},{x:3,y:19.9},{x:17,y:19.9}]){const s=state(),r=s.run!;advance(s,5.9);r.player.pos=pos;skipToBoss(s);assert.equal(r.battle!.wave,5);assert.ok(aliveEnemies(r).some(e=>e.kind==='guardian'));assert.ok(aliveEnemies(r).some(e=>e.kind==='beast'));}
 });
 test('预警中重载保留批次与倒计时，不重复发怪',()=>{
  const s=state();s.run!.time=4.95;tick(s,emptyInput(),.05);const before=s.run!.battle!.pending.map(p=>p.id),restored=parseSave(JSON.stringify(s));
@@ -72,7 +72,7 @@ test('屏外预警不随镜头尺寸变化跳点；贴近玩家时重选并完�
  const relocated=r.battle!.pending.find(p=>p.id===warning.id)!;assert.ok(relocated);assert.ok(distance(relocated.pos,r.player.pos)>=dungeon(r.boss).combat.safeDistance);assert.equal(relocated.remaining,dungeon(r.boss).combat.warning);
 });
 test('Boss 屏外先追近，不从屏外开始蓄力',()=>{
- const s=state(),r=s.run!,viewport=viewports[0];skipToBoss(s,viewport);const boss=aliveEnemies(r).find(e=>e.kind==='guardian')!;boss.pos={x:3,y:14};boss.mode='chase';r.player.pos={x:10,y:14};r.player.fireCd=2;tick(s,{...emptyInput(),viewport},.05);assert.equal(boss.mode,'chase');assert.equal(battleWorld(r).hazards.filter(h=>h.boss).length,0);assert.ok(boss.pos.x>3);
+ const s=state(),r=s.run!,viewport=viewports[0];skipToBoss(s,viewport);const boss=aliveEnemies(r).find(e=>e.kind==='guardian')!;boss.pos={x:4,y:14};boss.mode='chase';r.player.pos={x:10,y:14};r.player.fireCd=2;tick(s,{...emptyInput(),viewport},.05);assert.equal(boss.mode,'chase');assert.equal(battleWorld(r).hazards.filter(h=>h.boss).length,0);assert.ok(boss.pos.x>4);
 });
 test('大体型寻路按身体宽度绕开掩体',()=>{
  const angle=pathDirection('tide_colossus',{x:5.25,y:6},{x:5.25,y:11},1.12);assert.notEqual(angle,null);assert.ok(Math.abs(Math.cos(angle!))>.1);

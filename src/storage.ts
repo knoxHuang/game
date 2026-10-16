@@ -1,7 +1,7 @@
 import { SKILLS, EQUIPMENT, mainSkill, eligibleOffers } from './roguelite.ts';
 import type { RogueRun, SkillId } from './roguelite.ts';
 import { dungeon, isDungeonId } from './content/registry.ts';
-import { ensureBattle, combatWaves, bossHealth } from './battle.ts';
+import { ensureBattle, restoreArenaPositions, combatWaves, bossHealth } from './battle.ts';
 import type { GameState } from './model.ts';
 import { QUESTS, maxHealth } from './model.ts';
 
@@ -71,7 +71,7 @@ export function validState(v: unknown): v is GameState {
 export function parseSave(text: string): GameState {
   const value: unknown = JSON.parse(text);
   if (!validState(value)) throw new Error('存档格式或数据不符合当前版本。');
-  if(value.run)ensureBattle(value.run);
+  if(value.run){ensureBattle(value.run);restoreArenaPositions(value.run);}
   if(!validState(value))throw new Error('旧调查无法转换为当前战区。');
   return value;
 }

@@ -5,6 +5,7 @@ import { dungeonSchema, DEFAULT_DUNGEON } from '../src/content/schema.ts';
 import type { DungeonDefinition, SpriteDefinition } from '../src/content/schema.ts';
 import { imageInfo } from './image-info.ts';
 import { worldRegion, worldPoint } from '../src/content/world-map.ts';
+import { arenaBounds } from '../src/arena-bounds.ts';
 
 export async function checkContent(directory='src/content/dungeons', publicRoot='public') {
   const errors:string[]=[],warnings:string[]=[],packs:DungeonDefinition[]=[];
@@ -50,7 +51,8 @@ export async function checkContent(directory='src/content/dungeons', publicRoot=
     if(total>12*1024*1024)quality('运行时美术总量超过 12 MiB');
     // Verify connectivity on the same integer lattice and obstacle footprint used by navigation.
     const arena=pack.arena,obstacles=arena.obstacles;
-    const free=(x:number,y:number)=>x>=2&&x<=arena.width-2&&y>=2&&y<=arena.height-2&&!obstacles.some(p=>Math.abs(p.x-x)<.73&&Math.abs(p.y-y)<.73);
+    const b=arenaBounds(arena);
+    const free=(x:number,y:number)=>x>=b.minX+.22&&x<=b.maxX-.22&&y>=b.minY+.22&&y<=b.maxY-.22&&!obstacles.some(p=>Math.abs(p.x-x)<.73&&Math.abs(p.y-y)<.73);
     const start={x:Math.round(arena.entry.x),y:Math.round(arena.entry.y)},queue=[start],seen=new Set([`${start.x},${start.y}`]);
     for(let i=0;i<queue.length;i++)for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const x=queue[i].x+dx,y=queue[i].y+dy,key=`${x},${y}`;if(!seen.has(key)&&free(x,y)){seen.add(key);queue.push({x,y});}}
     if(arena.objects.some(o=>!seen.has(`${Math.round(o.at.x)},${Math.round(o.at.y)}`)))fail('入口与设施被障碍隔断');

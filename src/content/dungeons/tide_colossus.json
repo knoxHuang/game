@@ -352,6 +352,7 @@
       "y": 14
     },
     "background": "/assets/game/dockyard-arena-readable-mobile.webp",
+    "bounds": { "minX": 2.5, "maxX": 18.5, "minY": 2.8, "maxY": 20.3 },
     "obstacles": [
       {
         "x": 6,
@@ -385,7 +386,7 @@
         "kind": "exit",
         "at": {
           "x": 10,
-          "y": 20
+          "y": 19.5
         },
         "material": null,
         "amount": 0

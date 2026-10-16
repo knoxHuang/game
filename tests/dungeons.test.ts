@@ -73,6 +73,6 @@ test('自动发现第四包，拒绝缺图、重叠标记与断路',async()=>{
     pack.map.requires=[pack.id];await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('循环')));pack.map.requires=[];
     pack.map={...pack.map,x:54,y:17,order:4};await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('过近')));pack.map={...pack.map,x:28,y:86,order:4};
     pack.art.portrait='/assets/dungeons/missing.png';await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('missing.png')));pack.art.portrait=DUNGEONS[0].art.portrait;
-    pack.arena.obstacles=Array.from({length:17},(_,i)=>({x:i+2,y:9}));await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('隔断')));
+    delete pack.arena.bounds;pack.arena.obstacles=Array.from({length:17},(_,i)=>({x:i+2,y:9}));await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('隔断')));
   }finally{await rm(dir,{recursive:true,force:true});}
 });

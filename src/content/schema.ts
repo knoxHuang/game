@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { arenaBounds } from '../arena-bounds.ts';
 
 export const STYLE_ID = 'fog-harbor-pixel-v1';
 export const DEFAULT_DUNGEON = 'tide_colossus';
@@ -38,6 +39,7 @@ const fan = z.strictObject({ type: z.literal('fan'), offsets: z.array(bounded(-1
 const arena = z.strictObject({
   name: label, width: bounded(18,28).int(), height: bounded(20,32).int(), entry: point,
   background: file.nullable(), obstacles: z.array(point).max(20),
+  bounds: z.strictObject({minX:bounded(1.5,26.5),maxX:bounded(1.5,26.5),minY:bounded(1.5,30.5),maxY:bounded(1.5,30.5)}).optional(),
   objects: z.array(z.strictObject({id:z.string().regex(/^[a-z][a-z0-9-]{1,40}$/),kind:z.enum(['chest','exit']),at:point,material:material.nullable(),amount:bounded(0,10).int()})).max(12),
   hazards: z.array(point).max(8),
 });
@@ -72,7 +74,9 @@ export const dungeonSchema = z.strictObject({
   });
   if(total>(key==='waves'?161:401))fail('整局敌人预算超限', ['combat',key]);
   }
-  const inside=(p:{x:number;y:number})=>p.x>=2&&p.x<=pack.arena.width-2&&p.y>=2&&p.y<=pack.arena.height-2;
+  const b=arenaBounds(pack.arena);
+  if(b.minX<1.5||b.minY<1.5||b.maxX>pack.arena.width-1.5||b.maxY>pack.arena.height-1.5||b.maxX-b.minX<8||b.maxY-b.minY<8)fail('可走范围必须位于场地内，并保留通行空间', ['arena','bounds']);
+  const inside=(p:{x:number;y:number})=>p.x>=b.minX+.5&&p.x<=b.maxX-.5&&p.y>=b.minY+.5&&p.y<=b.maxY-.5;
   if(!inside(pack.arena.entry)||[...pack.arena.obstacles,...pack.arena.hazards,...pack.arena.objects.map(o=>o.at)].some(p=>!inside(p)))fail('场地坐标越界', ['arena']);
   if(!pack.arena.objects.some(o=>o.kind==='exit'))fail('场地必须保留撤离信标', ['arena','objects']);
   if(new Set(pack.arena.objects.map(o=>o.id)).size!==pack.arena.objects.length)fail('场地设施 id 必须唯一', ['arena','objects']);

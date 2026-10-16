@@ -2,6 +2,7 @@ import type { Enemy, Room, Run, SpawnWarning, Vec } from './model.ts';
 import { dungeon, enemyDefinition } from './content/registry.ts';
 import { roles, LEGACY_WORLD_HEIGHT } from './content/schema.ts';
 import { distance, isFree, nearestFreePoint, pathDirection } from './geometry.ts';
+import { arenaBounds } from './arena-bounds.ts';
 
 export const emptyRoom=(id:number):Room=>({id,enemies:[],objects:[],drops:[],hazards:[],projectiles:[],visited:true,grace:0,encounter:'pending',wave:0,waveDelay:0});
 export const battleWorld=(run:Run):Room=>run.world??run.rooms[run.room];
@@ -9,6 +10,20 @@ export const combatWaves=(run:Run)=>{const c=dungeon(run.boss).combat;return run
 export const bossHealth=(run:Run)=>{const d=dungeon(run.boss);return run.rogue?(run.rogue.pacingVersion===2?d.combat.rogueBossHealth??d.boss.hp:d.combat.legacyRogueBossHealth??d.combat.rogueBossHealth??d.boss.hp):d.boss.hp;};
 export const enemyHealth=(run:Run,kind:Enemy['kind'],elite=false)=>{const d=enemyDefinition(run.boss,kind);return kind==='guardian'?bossHealth(run):((run.rogue?.pacingVersion===2&&'rogueHp' in d?d.rogueHp:undefined)??d.hp)*(elite?2:1);};
 export const aliveEnemies=(run:Run)=>battleWorld(run).enemies.filter(e=>e.hp>0);
+
+/** Bring saved entities off scenery after a floor boundary correction. */
+export function restoreArenaPositions(run:Run):void {
+  const b=arenaBounds(dungeon(run.boss).arena);
+  const restore=(p:Vec,radius:number)=>{
+    if(p.x-radius>=b.minX&&p.x+radius<=b.maxX&&p.y-radius>=b.minY&&p.y+radius<=b.maxY)return false;
+    Object.assign(p,nearestFreePoint(run.boss,p,radius));return true;
+  };
+  restore(run.player.pos,.22);
+  const world=battleWorld(run);
+  for(const enemy of world.enemies)if(enemy.hp>0){const radius=enemyDefinition(run.boss,enemy.kind).radius;restore(enemy.pos,radius);restore(enemy.home,radius);}
+  for(const item of [...world.objects,...world.drops])restore(item.pos,.12);
+  for(const warning of run.battle?.pending??[])if(!warning.queued&&restore(warning.pos,enemyDefinition(run.boss,warning.kind).radius))warning.remaining=dungeon(run.boss).combat.warning;
+}
 
 // Upgrade old in-flight saves without clearing the character, loot or quests.
 export function ensureBattle(run:Run):void {
@@ -34,7 +49,7 @@ export function ensureBattle(run:Run):void {
 function candidates(run:Run,kind:Enemy['kind']):{pos:Vec;side:SpawnWarning['side']}[] {
   const definition=dungeon(run.boss),arena=definition.arena,actor=enemyDefinition(run.boss,kind);
   const margin=kind==='guardian'?actor.size/2:actor.size*.68;
-  const left=1.5+margin,right=arena.width-1.5-margin,minY=1.5+margin,maxY=arena.height-1.5-margin;
+  const b=arenaBounds(arena),left=b.minX+margin,right=b.maxX-margin,minY=b.minY+margin,maxY=b.maxY-margin;
   const result:{pos:Vec;side:SpawnWarning['side']}[]=[];
   const sideOf=(pos:Vec):SpawnWarning['side']=>{const dx=pos.x-run.player.pos.x,dy=pos.y-run.player.pos.y;return Math.abs(dx)>Math.abs(dy)?dx>0?'east':'west':dy>0?'south':'north';};
   // Sample the world around the player, including positions beyond the current screen.
