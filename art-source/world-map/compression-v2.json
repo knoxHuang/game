@@ -1,0 +1,9 @@
+{
+  "tool": "cwebp -lossless -exact -z 9 -mt -metadata all",
+  "before": 3274836,
+  "after": 2311832,
+  "width": 724,
+  "height": 2172,
+  "rgba_sha256": "32a9c2ece6757b68dfc7dd7654f0c7e6a6044c58ecddad76438493e96119f6e1",
+  "verified": true
+}

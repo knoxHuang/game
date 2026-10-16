@@ -5,15 +5,17 @@
   "status": "prototype",
   "name": "潮汐巨像",
   "zone": "雾港沉船区",
-  "description": "触肢落点与扇形弹幕；腮部暴露时远程输出。",
+  "description": "藤壶与钙壳侵蚀沉船和码头；触肢落点后腮部暴露。",
   "danger": 1,
   "recommendedHealth": 100,
   "recommendedDps": 18,
-  "unlockShop": 2,
+  "unlockShop": 1,
   "map": {
-    "x": 73,
-    "y": 75,
-    "order": 3
+    "x": 55,
+    "y": 82,
+    "order": 1,
+    "region": "nearshore",
+    "requires": []
   },
   "lore": {
     "kind": "original",
@@ -25,7 +27,7 @@
   "art": {
     "portrait": "/assets/bosses/tide-colossus.png",
     "card": null,
-    "brief": "沿用已确认的精细像素海港画风；当前使用历史画像和共用战斗资产，独立小头像、绘图卡、专用动作图集与主题场景待补齐。",
+    "brief": "原创污染规则：钙化硬壳、藤壶侵蚀船坞、拖拽痕迹与反常潮线。本轮只完成世界海图环境，独立战区与完整动作资源仍待补齐。",
     "reviewed": false
   },
   "biome": {
@@ -103,7 +105,8 @@
     ],
     "rewards": {
       "crystal": 3,
-      "iron": 3
+      "iron": 3,
+      "energy": 220
     },
     "sprite": {
       "type": "builtin",
@@ -114,7 +117,7 @@
     "beast": {
       "name": "潮蛰兽",
       "relationship": "项目原创通用遭遇生物；与该 Boss 的从属关系属于游戏改编，待审核。",
-      "hp": 10,
+      "hp": 18,
       "radius": 0.34,
       "size": 1.2,
       "speed": 2,
@@ -130,12 +133,13 @@
       "sprite": {
         "type": "builtin",
         "key": "beast"
-      }
+      },
+      "energy": 2
     },
     "bug": {
       "name": "附蛰虫",
       "relationship": "项目原创通用遭遇生物；与该 Boss 的从属关系属于游戏改编，待审核。",
-      "hp": 20,
+      "hp": 28,
       "radius": 0.3,
       "size": 1.2,
       "speed": 1.5,
@@ -151,12 +155,13 @@
       "sprite": {
         "type": "builtin",
         "key": "bug"
-      }
+      },
+      "energy": 3
     },
     "cultist": {
       "name": "溺亡秘仪师",
       "relationship": "项目原创通用遭遇生物；与该 Boss 的从属关系属于游戏改编，待审核。",
-      "hp": 30,
+      "hp": 38,
       "radius": 0.32,
       "size": 1.2,
       "speed": 1.5,
@@ -172,7 +177,8 @@
       "sprite": {
         "type": "builtin",
         "key": "cultist"
-      }
+      },
+      "energy": 5
     }
   },
   "effects": {
@@ -238,7 +244,65 @@
         "batches": 1,
         "batchInterval": 0
       }
-    ]
+    ],
+    "rogueWaves": [
+      {
+        "at": 8,
+        "batches": 5,
+        "batchInterval": 10,
+        "enemies": {
+          "beast": 36,
+          "bug": 4,
+          "cultist": 0,
+          "guardian": 0
+        }
+      },
+      {
+        "at": 70,
+        "batches": 8,
+        "batchInterval": 8,
+        "enemies": {
+          "beast": 52,
+          "bug": 10,
+          "cultist": 2,
+          "guardian": 0
+        }
+      },
+      {
+        "at": 140,
+        "batches": 8,
+        "batchInterval": 8,
+        "enemies": {
+          "beast": 66,
+          "bug": 16,
+          "cultist": 6,
+          "guardian": 0
+        }
+      },
+      {
+        "at": 210,
+        "batches": 8,
+        "batchInterval": 8,
+        "enemies": {
+          "beast": 82,
+          "bug": 22,
+          "cultist": 8,
+          "guardian": 0
+        }
+      },
+      {
+        "at": 280,
+        "batches": 1,
+        "batchInterval": 0,
+        "enemies": {
+          "beast": 0,
+          "bug": 0,
+          "cultist": 0,
+          "guardian": 1
+        }
+      }
+    ],
+    "rogueBossHealth": 5000
   },
   "arena": {
     "name": "黑潮船坞",
@@ -248,7 +312,7 @@
       "x": 10,
       "y": 14
     },
-    "background": "/assets/game/dockyard-arena.png",
+    "background": "/assets/game/dockyard-arena-readable.png",
     "obstacles": [
       {
         "x": 6,

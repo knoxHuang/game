@@ -1,4 +1,6 @@
-import { attackDamage, careerStats, CAREERS, MATERIAL_NAMES, maxHealth, UPGRADES, upgradeStatus, wearingArmor } from './model.ts';
+import { SKILLS, mainSkill } from './roguelite.ts';
+import { renderRogueEquipment } from './rogue-panels.ts';
+import { attackDamage, careerStats, CAREERS, MATERIAL_NAMES, maxHealth, UPGRADES, upgradeStatus, wearingArmor, experience } from './model.ts';
 import type { CareerId, GameState, UpgradeId } from './model.ts';
 
 export type CharacterTab = 'equipment' | 'career';
@@ -29,7 +31,7 @@ function equipment(s: GameState, options: Options): string {
   const slot = (id: EquipmentSlot, label: string, icon: string, state: string) => `<button class="loadout-slot loadout-${id}${options.slot === id ? ' is-selected' : ''}" data-action="equipment-slot" data-value="${id}" aria-label="${label}：${state}，查看详情" aria-pressed="${options.slot === id}">
     <span class="loadout-slot-label">${label}</span><span class="loadout-slot-art">${art(icon, options.icon)}</span><span class="loadout-slot-state">${state}</span>
   </button>`;
-  return `<div class="loadout-identity"><strong>林烬</strong><span>雾港外勤调查员 · ${career.name}</span></div>
+  return `<div class="loadout-identity"><strong>林烬 · Lv.${experience(s).level}</strong><span>雾港外勤调查员 · ${career.name}</span></div>
     <section class="loadout-stage" aria-label="角色与当前穿戴">
       ${slot('weapon', '武器', weaponIcon(s.career), s.weapon ? '已校准' : '基础武器')}
       ${slot('armor', '护具', 'armor', wearingArmor(s) ? (s.armor ? '已加固' : '黄色雨衣') : '未穿戴')}
@@ -45,9 +47,9 @@ function equipment(s: GameState, options: Options): string {
 function careers(s: GameState, options: Options): string {
   const id = options.preview ?? s.career, career = CAREERS[id];
   const traits = {
-    investigator: ['稳定连射', '均衡射程', '照明标记'],
-    occultist: ['符弹扩散', '群体压制', '封印控制'],
-    harpooner: ['强力单发', '远距猎杀', '弱点爆发'],
+    investigator: ['稳定连射', '均衡射程', s.research?'交叉弹幕':'照明标记'],
+    occultist: ['符弹扩散', '群体压制', s.research?'连锁爆裂':'封印控制'],
+    harpooner: ['强力单发', '远距猎杀', s.research?'三叉猎潮':'弱点爆发'],
   }[id];
   const selectors = (Object.entries(CAREERS) as [CareerId, typeof career][]).map(([key, item]) => `<button class="profession-selector${key === id ? ' is-selected' : ''}" data-action="career-preview" data-value="${key}" aria-pressed="${key === id}" aria-label="预览${item.name}"><span>${art(weaponIcon(key), options.icon)}</span><strong>${item.name}</strong>${key === s.career ? '<small>当前</small>' : ''}</button>`).join('');
   return `<p class="profession-instruction">轻触武器，查看职业档案。</p><div class="profession-selectors" role="group" aria-label="职业预览">${selectors}</div>
@@ -55,10 +57,10 @@ function careers(s: GameState, options: Options): string {
       <div class="profession-portrait">${paperdoll(s)}<span class="profession-showcase-weapon">${art(weaponIcon(id), options.icon)}</span></div>
       <div class="profession-caption"><span>林烬 · 职业档案</span><h3>${career.name}</h3><p>${career.weaponName}</p><div class="profession-traits">${traits.map(trait => `<span>${trait}</span>`).join('')}</div></div>
     </section>
-    <div class="profession-details"><p>${career.description}</p><dl><div><dt>基础单发</dt><dd>${career.damage}</dd></div><div><dt>攻击间隔</dt><dd>${career.cooldown} 秒</dd></div><div><dt>射程</dt><dd>${career.range}</dd></div></dl><p class="profession-skill"><strong>${career.skill}</strong><span>职业能力 · 冷却 6 秒${s.skill ? '' : ' · 尚未解锁'}</span></p></div>
+    <div class="profession-details"><p>${career.description}</p><dl><div><dt>基础单发</dt><dd>${career.damage}</dd></div><div><dt>攻击间隔</dt><dd>${career.cooldown} 秒</dd></div><div><dt>射程</dt><dd>${career.range}</dd></div></dl>${s.research?`<p class="profession-skill"><strong>${SKILLS[mainSkill(id)].name}</strong><span>自动攻击 · 每局独立强化</span></p><p>${SKILLS[mainSkill(id)].detail}</p>`:`<p class="profession-skill"><strong>${career.skill}</strong><span>职业能力 · 冷却 6 秒${s.skill ? '' : ' · 尚未解锁'}</span></p>`}</div>
     ${s.run ? '<p class="equipment-requirement">调查进行中，返回调查所后才能更换职业。</p>' : ''}
-    <div class="profession-confirm">${action('career', id === s.career ? '当前已选用' : `选用${career.name}`, id, id === s.career || !!s.run)}</div>
-    <section class="profession-ability"><h3>职业能力整备</h3><p class="profession-instruction">整备当前职业：${CAREERS[s.career].name}</p>${upgrade(s, 'skill')}</section>`;
+    <div class="profession-confirm">${action('career', id === s.career ? '当前已选用' : s.research&&!s.research.careers.includes(id)?(s.research.careers.length===1?'首次免费转职':'研究转职 · 60冥币 / 50研究能量'):`选用${career.name}`, id, id === s.career || !!s.run || (!!s.research&&!s.research.careers.includes(id)&&!s.tutorialDone))}</div>
+    ${s.research?`<section class="profession-ability"><h3>局内构筑与觉醒</h3><p>出发从 Lv.1 开始。拾取能量升级，随机三选一。最多 3 项攻击、3 项辅助，全部自动释放。</p><p>主武器满5阶、对应配件满3阶，并击败精英后，可抽到觉醒选项。</p><p>${s.tutorialDone?'首次解锁新职业免费，后续使用研究资源。已解锁职业返所可免费切换。':'先提交失联船员案件，即可免费解锁一个新职业。'}</p></section>`:`<section class="profession-ability"><h3>职业能力整备</h3><p class="profession-instruction">整备当前职业：${CAREERS[s.career].name}</p>${upgrade(s, 'skill')}</section>`}`;
 }
 
 function inspection(s: GameState, options: Options): string {
@@ -75,6 +77,6 @@ function inspection(s: GameState, options: Options): string {
 
 export function renderCharacterPanel(s: GameState, options: Options): string {
   return `<div class="character-tabs" role="tablist" aria-label="整备分类">${(['equipment', 'career'] as const).map((id, index) => `<button class="character-tab${options.tab === id ? ' is-active' : ''}" role="tab" id="character-tab-${id}" aria-selected="${options.tab === id}" aria-controls="character-tabpanel" tabindex="${options.tab === id ? '0' : '-1'}" data-action="character-tab" data-value="${id}">${index === 0 ? '角色' : '职业'}</button>`).join('')}</div>
-    <div class="panel-scroll character-scroll" id="character-tabpanel" role="tabpanel" aria-labelledby="character-tab-${options.tab}">${options.tab === 'equipment' ? equipment(s, options) : careers(s, options)}</div>
+    <div class="panel-scroll character-scroll" id="character-tabpanel" role="tabpanel" aria-labelledby="character-tab-${options.tab}">${s.research?(options.tab==='equipment'?renderRogueEquipment(s,options.icon):careers(s,options)):(options.tab === 'equipment' ? equipment(s, options) : careers(s, options))}</div>
     <div class="panel-actions character-actions">${action('back', '返回调查所')}</div>${inspection(s, options)}`;
 }

@@ -6,6 +6,8 @@ import { distance, isFree, nearestFreePoint, pathDirection } from './geometry.ts
 
 export const emptyRoom=(id:number):Room=>({id,enemies:[],objects:[],drops:[],hazards:[],projectiles:[],visited:true,grace:0,encounter:'pending',wave:0,waveDelay:0});
 export const battleWorld=(run:Run):Room=>run.world??run.rooms[run.room];
+export const combatWaves=(run:Run)=>{const c=dungeon(run.boss).combat;return run.rogue&&c.rogueWaves?c.rogueWaves:c.waves;};
+export const bossHealth=(run:Run)=>{const d=dungeon(run.boss);return run.rogue?(d.combat.rogueBossHealth??d.boss.hp):d.boss.hp;};
 export const aliveEnemies=(run:Run)=>battleWorld(run).enemies.filter(e=>e.hp>0);
 
 // Upgrade old in-flight saves without clearing the character, loot or quests.
@@ -57,15 +59,16 @@ export function spawnPoint(run:Run,index:number,kind:Enemy['kind'],viewport={wid
     distance(pos,run.player.pos)>=dungeon(run.boss).combat.safeDistance+(kind==='guardian'?.8:0)
     &&isFree(run.boss,pos,radius)
     &&(kind==='guardian'||world.enemies.every(e=>e.hp<=0||distance(pos,e.pos)>=radius+enemyDefinition(run.boss,e.kind).radius+.2))
-    &&(kind==='guardian'||(run.battle?.pending??[]).every(p=>distance(pos,p.pos)>=radius+enemyDefinition(run.boss,p.kind).radius+.15))
+    &&(kind==='guardian'||(run.battle?.pending??[]).every(p=>p.queued||distance(pos,p.pos)>=radius+enemyDefinition(run.boss,p.kind).radius+.15))
     &&pathDirection(run.boss,pos,run.player.pos,radius)!==null);
 }
 export function updateBattle(run:Run,dt:number,viewport={width:360,height:640}):{changed:boolean;messages:string[]} {
   ensureBattle(run);const state=run.battle!,world=run.world!,definition=dungeon(run.boss),messages:string[]=[];
   if(state.won)return {changed:false,messages};
   let changed=false;
-  for(let waveIndex=0;waveIndex<definition.combat.waves.length;waveIndex++) {
-    const wave=definition.combat.waves[waveIndex];if(run.time+1e-7<wave.at)break;
+  const waves=combatWaves(run);
+  for(let waveIndex=0;waveIndex<waves.length;waveIndex++) {
+    const wave=waves[waveIndex];if(run.time+1e-7<wave.at)break;
     state.wave=Math.max(state.wave,waveIndex+1);
     while(state.batches![waveIndex]<wave.batches&&run.time+1e-7>=wave.at+state.batches![waveIndex]*wave.batchInterval){
       const batch=state.batches![waveIndex]++;
@@ -74,25 +77,34 @@ export function updateBattle(run:Run,dt:number,viewport={width:360,height:640}):
         for(let i=0;i<count;i++){
           const id=`timed-${run.id}-${waveIndex}-${batch}-${kind}-${i}`,index=state.pending.length+waveIndex*3+batch*4;
           const at=spawnPoint(run,index,kind,viewport);
-          state.pending.push({id,kind,pos:at?.pos??{...run.player.pos},side:at?.side??'north',remaining:definition.combat.warning});
+          const queued=!!run.rogue&&(!at||(kind!=='guardian'&&world.enemies.filter(e=>e.hp>0).length+state.pending.filter(p=>!p.queued).length>=90));
+          const elite=!!run.rogue&&waveIndex>=2&&kind==='cultist'&&i===0&&batch===Math.ceil(wave.batches/wave.enemies.cultist)-1;
+          state.pending.push({...(run.rogue?{queued,elite}:{}),id,kind,pos:at?.pos??{...run.player.pos},side:at?.side??'north',remaining:definition.combat.warning});
         }
       }
       if(batch===0)messages.push(waveIndex===4?`${definition.name}正在显现！`:`第 ${waveIndex+1} / 5 阶段 · 敌群持续来袭`);
       changed=true;
     }
   }
-  const retained:SpawnWarning[]=[];
+  const retained:SpawnWarning[]=[];let placements=0;
   for(const pending of state.pending) {
+    if(pending.queued){
+      if(pending.kind!=='guardian'&&(world.enemies.filter(e=>e.hp>0).length+retained.filter(p=>!p.queued).length>=90||placements>=4)){retained.push(pending);continue;}
+      placements++;const at=spawnPoint(run,retained.length+state.wave,pending.kind,viewport);
+      if(at){pending.pos=at.pos;pending.side=at.side;pending.queued=false;pending.remaining=definition.combat.warning;changed=true;}
+      retained.push(pending);continue;
+    }
     pending.remaining=Math.max(0,pending.remaining-dt);
     if(pending.remaining>0){retained.push(pending);continue;}
+    if(run.rogue&&pending.kind!=='guardian'&&world.enemies.filter(e=>e.hp>0).length>=90){pending.queued=true;retained.push(pending);continue;}
     const radius=enemyDefinition(run.boss,pending.kind).radius;
     const area=spawnArea(run,pending.kind,viewport);
     if(pending.pos.x<area.left||pending.pos.x>area.right||pending.pos.y<area.minY||pending.pos.y>area.maxY||distance(pending.pos,run.player.pos)<definition.combat.safeDistance||!isFree(run.boss,pending.pos,radius)||(pending.kind!=='guardian'&&world.enemies.some(e=>e.hp>0&&distance(e.pos,pending.pos)<radius+enemyDefinition(run.boss,e.kind).radius+.1))) {
       const at=spawnPoint(run,retained.length+state.wave,pending.kind,viewport);
-      if(at){pending.pos=at.pos;pending.side=at.side;}pending.remaining=definition.combat.warning;retained.push(pending);changed=true;continue;
+      if(at){pending.pos=at.pos;pending.side=at.side;}else if(run.rogue)pending.queued=true;pending.remaining=definition.combat.warning;retained.push(pending);changed=true;continue;
     }
     const pos={...pending.pos};
-    world.enemies.push({id:pending.id,kind:pending.kind,pos,home:{...pos},hp:enemyDefinition(run.boss,pending.kind).hp,mode:'chase',timer:0,angle:Math.PI/2,turn:0,hit:false,flash:0,lost:0});changed=true;
+    world.enemies.push({id:pending.id,kind:pending.kind,pos,home:{...pos},hp:pending.kind==='guardian'?bossHealth(run):enemyDefinition(run.boss,pending.kind).hp*(pending.elite?2:1),...(pending.elite?{elite:true}:{}),mode:'chase',timer:0,angle:Math.PI/2,turn:0,hit:false,flash:0,lost:0});changed=true;
   }
   state.pending=retained;
   return {changed,messages};

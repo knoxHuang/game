@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { dungeonSchema, DEFAULT_DUNGEON } from '../src/content/schema.ts';
 import type { DungeonDefinition, SpriteDefinition } from '../src/content/schema.ts';
 import { imageInfo } from './image-info.ts';
+import { worldRegion, worldPoint } from '../src/content/world-map.ts';
 
 export async function checkContent(directory='src/content/dungeons', publicRoot='public') {
   const errors:string[]=[],warnings:string[]=[],packs:DungeonDefinition[]=[];
@@ -17,7 +18,8 @@ export async function checkContent(directory='src/content/dungeons', publicRoot=
     const fail=(message:string)=>errors.push(`${pack.id}: ${message}`);
     const quality=(message:string)=>(pack.status==='ready'?errors:warnings).push(`${pack.id}: ${message}`);
     if(ids.has(pack.id))fail('重复副本 id');ids.add(pack.id);
-    if(pack.map.x<50&&pack.map.y<27)fail('海图标记会遮住左上方航图标题');
+    if(!worldRegion(pack.map.region))fail('未知世界海域');
+    if(new Set(pack.map.requires).size!==pack.map.requires.length)fail('重复的前置报告');
     const paths=new Set<string>();
     async function asset(src:string,kind:'portrait'|'card'|'background'|'tile'|'sprite'|'effect',sprite?:SpriteDefinition) {
       paths.add(src);
@@ -57,7 +59,13 @@ export async function checkContent(directory='src/content/dungeons', publicRoot=
     if(pack.status==='prototype')warnings.push(`${pack.id}: 原型包，尚未满足完整美术交付标准`);
   }
   if(!ids.has(DEFAULT_DUNGEON))errors.push(`缺少教学与旧存档使用的默认副本 ${DEFAULT_DUNGEON}`);
-  for(let i=0;i<packs.length;i++)for(let j=0;j<i;j++)if(Math.abs(packs[i].map.x-packs[j].map.x)<40&&Math.abs(packs[i].map.y-packs[j].map.y)<28)errors.push(`${packs[i].id}: 海图标记与 ${packs[j].id} 过近`);
+  const byId = new Map(packs.map(p=>[p.id,p]));
+  for(const pack of packs) {
+    for(const required of pack.map.requires)if(!ids.has(required))errors.push(`${pack.id}: 未知前置报告 ${required}`);
+    const visit=(id:string,path:Set<string>):boolean=>{if(path.has(id))return true;const next=new Set(path);next.add(id);return (byId.get(id)?.map.requires??[]).some(required=>visit(required,next));};
+    if(visit(pack.id,new Set()))errors.push(`${pack.id}: 前置报告存在循环`);
+  }
+  for(let i=0;i<packs.length;i++)for(let j=0;j<i;j++){const a=worldPoint(packs[i].map.x,packs[i].map.y),b=worldPoint(packs[j].map.x,packs[j].map.y);if(Math.hypot(a.x-b.x,a.y-b.y)<180)errors.push(`${packs[i].id}: 海图标记与 ${packs[j].id} 过近`);}
   return {packs,errors,warnings};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
@@ -67,5 +75,9 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).hr
   if(target&&!result.packs.some(p=>p.id===target))result.errors.push(`未知副本 ${target}`);
   if(process.argv.includes('--ready'))for(const pack of result.packs.filter(p=>!target||p.id===target))if(pack.status!=='ready')result.errors.push(`${pack.id}: 尚未完成`);
   if(result.errors.length){console.error(result.errors.join('\n'));process.exitCode=1;}
-  else {await writeFile('src/content/catalog.generated.json',JSON.stringify(result.packs,null,2)+'\n');console.log(`副本校验通过：${result.packs.length} 个包，目录已更新。`);}
+  else {
+    const file='src/content/catalog.generated.json',catalog=JSON.stringify(result.packs,null,2)+'\n';
+    if(await readFile(file,'utf8').catch(()=>null)!==catalog)await writeFile(file,catalog);
+    console.log(`副本校验通过：${result.packs.length} 个包。`);
+  }
 }

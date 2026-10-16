@@ -1,4 +1,8 @@
+import { freshResearch, rogueHealth, rogueDamage, rogueCooldown, rogueArea, skillLevel, localRequired, settleRogue } from './roguelite.ts';
+import type { EquipmentId, Research, RogueRun } from './roguelite.ts';
 import { DUNGEONS_BY_ID } from './content/registry.ts';
+import { DEFAULT_DUNGEON } from './content/schema.ts';
+import { worldRegion } from './content/world-map.ts';
 export type Material = 'crystal' | 'iron';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type CareerId = 'investigator' | 'occultist' | 'harpooner';
@@ -7,7 +11,7 @@ export type QuestId = 'K0' | 'Q11' | 'Q12' | 'Q13' | 'K1';
 export type Vec = { x: number; y: number };
 export type Quest = { id: QuestId; progress: number; ready: boolean; instance: number };
 export type Enemy = {
-  id: string; kind: 'beast' | 'bug' | 'cultist' | 'guardian'; pos: Vec; home: Vec; hp: number;
+  elite?: boolean; id: string; kind: 'beast' | 'bug' | 'cultist' | 'guardian'; pos: Vec; home: Vec; hp: number;
   mode: 'idle' | 'chase' | 'windup' | 'attack' | 'recover'; timer: number;
   angle: number; turn: number; hit: boolean; flash: number; lost: number;
 };
@@ -15,12 +19,12 @@ export type WorldObject = {
   id: string; kind: 'exit' | 'chest' | 'find' | 'survey' | 'seal'; pos: Vec;
   used: boolean; material?: Material; amount?: number; quest?: QuestId;
 };
-export type Drop = { id: string; pos: Vec; material?: Material; amount?: number; quest?: QuestId; taken: boolean };
+export type Drop = { id: string; pos: Vec; material?: Material; amount?: number; quest?: QuestId; taken: boolean; xp?: number };
 export type Hazard = { id: string; pos: Vec; phase: number; hit: boolean; boss: boolean; magic?: boolean; damage?: number; radius?: number };
 export type Projectile = {
   id: string; pos: Vec; angle: number; life: number; damage: number;
   owner: 'player' | 'enemy'; speed: number; splash: number; weakpoint: number;
-  effect?: 'none' | 'stun' | 'seal' | 'anchor';
+  effect?: 'none' | 'stun' | 'seal' | 'anchor'; pierce?: number; hits?: string[]; blastChain?:boolean;
 };
 export type Room = {
   id: number; enemies: Enemy[]; objects: WorldObject[]; drops: Drop[];
@@ -33,20 +37,20 @@ export type Player = {
   angle: number; dodgeCd: number; skillCd: number; fireCd: number; invincible: number;
   hits: string[];
 };
-export type SpawnWarning = { id: string; kind: Enemy['kind']; pos: Vec; remaining: number; side: 'north'|'east'|'south'|'west' };
+export type SpawnWarning = { queued?:boolean; elite?:boolean; id: string; kind: Enemy['kind']; pos: Vec; remaining: number; side: 'north'|'east'|'south'|'west' };
 export type BattleState = { version: 2 | 3; batches?: number[]; wave: number; won: boolean; pending: SpawnWarning[] };
 export type Run = {
   id: number; room: number; boss: BossId; time: number; player: Player;
-  battle?: BattleState; world?: Room;
+  rogue?: RogueRun; battle?: BattleState; world?: Room;
   rooms: Room[]; materials: Record<Material, number>; progress: Partial<Record<QuestId, number>>;
-  survey: number; harm: Record<string, number>; potionsUsed: number; tutorial: boolean;
+  energyGained?: number; survey: number; harm: Record<string, number>; potionsUsed: number; tutorial: boolean;
 };
 export type Summary = {
-  success: boolean; materials: Record<Material, number>; ready: QuestId[];
+  rogue?: {level:number;gold:number;research:number;equipment:EquipmentId[]}; success: boolean; energyGained?: number; materials: Record<Material, number>; ready: QuestId[];
   progress: Partial<Record<QuestId, number>>; harm: Record<string, number>; potionsUsed: number;
 };
 export type GameState = {
-  schema: 3; shop: 1 | 2; career: CareerId; selectedBoss: BossId; weapon: 0 | 1; armor: 0 | 1; armorEquipped?: boolean; skill: boolean;
+  research?: Research; schema: 3; energy?: number; shop: 1 | 2; career: CareerId; selectedBoss: BossId; weapon: 0 | 1; armor: 0 | 1; armorEquipped?: boolean; bossReports?: BossId[]; skill: boolean;
   gold: number; materials: Record<Material, number>; tutorialDone: boolean;
   depth: 1 | 2; quests: Quest[]; sequence: number; extraPotion: boolean;
   settings: { music: boolean; sound: boolean; reducedMotion: boolean };
@@ -63,11 +67,22 @@ export type CareerDefinition = {
 };
 
 export const CAREERS: Record<CareerId, CareerDefinition> = {
-  investigator: { name: '异闻枪手', weaponName: '黄铜左轮', description: '射速稳定，射程均衡，适合初次调查。', attack: '照明弹', skill: '照明弹标记', damage: 10, cooldown: 0.42, speed: 8, range: 7.5, splash: 0, weakpoint: 1.8 },
-  occultist: { name: '秘仪师', weaponName: '仪式符弹', description: '符弹较慢，命中后扩散，对群体更有效。', attack: '符弹', skill: '封印阵', damage: 13, cooldown: 0.72, speed: 6, range: 6.8, splash: 0.48, weakpoint: 1.6 },
-  harpooner: { name: '鱼叉猎手', weaponName: '鱼叉枪', description: '装填较慢，单发强力，Boss 弱点伤害更高。', attack: '鱼叉', skill: '锚索', damage: 21, cooldown: 1.02, speed: 10, range: 9, splash: 0, weakpoint: 2.6 },
+  investigator: { name: '异闻枪手', weaponName: '黄铜左轮', description: '射速稳定，射程均衡，适合初次调查。', attack: '照明弹', skill: '照明弹标记', damage: 10, cooldown: 0.36, speed: 12, range: 7.5, splash: 0, weakpoint: 1.8 },
+  occultist: { name: '秘仪师', weaponName: '仪式符弹', description: '符弹较慢，命中后扩散，对群体更有效。', attack: '符弹', skill: '封印阵', damage: 13, cooldown: 0.6, speed: 8, range: 6.8, splash: 0.8, weakpoint: 1.6 },
+  harpooner: { name: '鱼叉猎手', weaponName: '鱼叉枪', description: '装填较慢，单发强力，Boss 弱点伤害更高。', attack: '鱼叉', skill: '锚索', damage: 24, cooldown: 0.9, speed: 12, range: 9, splash: 0, weakpoint: 2.6 },
 };
 export const BOSSES = DUNGEONS_BY_ID;
+export function dungeonAccess(s: GameState, id: BossId): { available: boolean; reasons: string[]; reported: boolean } {
+  const definition = BOSSES[id];
+  if (!definition) return { available: false, reasons: ['未知调查区域'], reported: false };
+  const reasons: string[] = [];
+  const region = worldRegion(definition.map.region);
+  if (region && !region.charted) reasons.push(region.gate);
+  if (id !== DEFAULT_DUNGEON && definition.status !== 'ready') reasons.push('内容制作中');
+  for (const prerequisite of definition.map.requires) if (!(s.bossReports ?? []).includes(prerequisite)) reasons.push(`需带回${BOSSES[prerequisite]?.name ?? prerequisite}调查报告`);
+  if (s.shop < definition.unlockShop) reasons.push(`需调查所${definition.unlockShop === 2 ? 'Ⅱ' : 'Ⅰ'}级`);
+  return { available: !reasons.length, reasons, reported: (s.bossReports ?? []).includes(id) };
+}
 export type BossRisk = { health: number; dps: number; grade: '优势' | '均衡' | '高危'; healthOk: boolean; dpsOk: boolean };
 export function bossRisk(s: GameState, id: BossId): BossRisk {
   const boss = BOSSES[id], stats = careerStats(s), health = maxHealth(s), dps = stats.damage / stats.cooldown;
@@ -87,7 +102,26 @@ export const QUESTS: Record<QuestId, QuestDefinition> = {
 export const MATERIAL_NAMES: Record<Material, string> = { crystal: '异变样本', iron: '铜合金零件' };
 export const emptyMaterials = (): Record<Material, number> => ({ crystal: 0, iron: 0 });
 export const wearingArmor = (s: GameState) => s.armorEquipped !== false;
-export const maxHealth = (s: GameState) => s.armor && wearingArmor(s) ? 120 : 100;
+export const LEVEL_CAP = 60;
+export const energyThreshold = (level: number) => 100 * (level - 1) + 12.5 * (level - 1) * (level - 2);
+export function experience(s: GameState) {
+  if(s.research){const r=s.run?.rogue;return {level:r?.level??1,total:r?.xp??0,current:r?.xp??0,required:localRequired(r?.level??1),capped:false};}
+  const total = s.energy ?? 0;
+  let level = 1;
+  while (level < LEVEL_CAP && total >= energyThreshold(level + 1)) level++;
+  const required = 100 + 25 * (level - 1), current = total - energyThreshold(level);
+  return { level, total, current, required, capped: level === LEVEL_CAP };
+}
+export const maxHealth = (s: GameState) => s.research ? rogueHealth(s) : 100 + 2 * (experience(s).level - 1) + (s.armor && wearingArmor(s) ? 20 : 0);
+export function gainEnergy(s: GameState, amount: number): number {
+  const before = experience(s).level, health = maxHealth(s);
+  s.energy = Math.min(1e9, (s.energy ?? 0) + amount);
+  if (s.run) {
+    s.run.energyGained = (s.run.energyGained ?? 0) + amount;
+    if (s.run.player.hp > 0) s.run.player.hp += maxHealth(s) - health;
+  }
+  return experience(s).level - before;
+}
 export function setArmorEquipped(s: GameState, equipped: boolean): string | null {
   if (s.run) return '调查进行中，返回调查所后才能更换护具。';
   s.armorEquipped = equipped;
@@ -95,12 +129,13 @@ export function setArmorEquipped(s: GameState, equipped: boolean): string | null
 }
 export const careerStats = (s: GameState) => {
   const career = CAREERS[s.career] ?? CAREERS.investigator;
-  return { ...career, damage: career.damage * (s.weapon ? 1.25 : 1) };
+  if(s.research){const level=skillLevel(s,s.career==='occultist'?'sigil':s.career==='harpooner'?'harpoon':'revolver')||1;return {...career,damage:career.damage*(1+.3*(level-1))*rogueDamage(s),cooldown:career.cooldown*rogueCooldown(s)*(1-.06*(level-1)),splash:career.splash*rogueArea(s)*(1+.12*(level-1))};}
+  return { ...career, damage: career.damage * (s.weapon ? 1.25 : 1) * (1 + .02 * (experience(s).level - 1)) };
 };
 export const attackDamage = (s: GameState) => Math.round(careerStats(s).damage);
 export const availableQuests = (s: GameState): QuestId[] => !s.tutorialDone ? ['K0'] : s.shop === 2 && s.depth === 1 ? ['K1', 'Q11', 'Q12', 'Q13'] : ['Q11', 'Q12', 'Q13'];
-export function freshState(): GameState {
-  return { schema: 3, shop: 1, career: 'investigator', selectedBoss: 'tide_colossus', weapon: 0, armor: 0, armorEquipped: true, skill: false, gold: 0, materials: emptyMaterials(), tutorialDone: false, depth: 1, quests: [], sequence: 0, extraPotion: false, settings: { music: true, sound: true, reducedMotion: false }, run: null, summary: null };
+export function freshState(mode: 'rogue'|'legacy'='rogue'): GameState {
+  return { ...(mode==='rogue'?{research:freshResearch()}:{}), schema: 3, energy: 0, shop: 1, career: 'investigator', selectedBoss: 'tide_colossus', weapon: 0, armor: 0, armorEquipped: true, bossReports: [], skill: false, gold: 0, materials: emptyMaterials(), tutorialDone: false, depth: 1, quests: [], sequence: 0, extraPotion: false, settings: { music: true, sound: true, reducedMotion: false }, run: null, summary: null };
 }
 export function acceptQuest(s: GameState, id: QuestId): string | null {
   if (s.run) return '回到调查所后才能接取案件。';
@@ -131,12 +166,13 @@ export function deliverQuest(s: GameState, id: QuestId): string | null {
 export type UpgradeId = 'weapon' | 'armor' | 'skill' | 'shop';
 export const UPGRADES: Record<UpgradeId, { title: string; gold: number; crystal: number; iron: number; description: string }> = {
   weapon: { title: '武器校准', gold: 50, crystal: 2, iron: 1, description: '远程伤害提高 25% · 为职业武器调整枪机和瞄具' },
-  armor: { title: '防水护具', gold: 50, crystal: 0, iron: 3, description: '生命 100 → 120 · 加固外勤防护服' },
+  armor: { title: '防水护具', gold: 50, crystal: 0, iron: 3, description: '生命上限 +20 · 加固外勤防护服' },
   skill: { title: '职业能力', gold: 90, crystal: 4, iron: 2, description: '解锁当前职业的强化弹药 · 冷却 6 秒' },
   shop: { title: '扩建调查所', gold: 180, crystal: 8, iron: 8, description: '建立研究与整备区 · 守夜人顾檀到访并开放巨像案件' },
 };
 export function upgradeStatus(s: GameState, id: UpgradeId): string | null {
   if (s.run) return '撤回调查所后再整备。';
+  if(s.research&&id!=='shop')return '请在整备室进行研究训练或装备强化。';
   if ((id === 'weapon' && s.weapon) || (id === 'armor' && s.armor) || (id === 'skill' && s.skill) || (id === 'shop' && s.shop === 2)) return '已完成';
   if (id === 'skill' && s.shop < 2) return '扩建调查所后开放';
   const u = UPGRADES[id];
@@ -161,16 +197,18 @@ export function finishRun(s: GameState, success: boolean): Summary | null {
   const run = s.run;
   if (!run) return null;
   const ready: QuestId[] = [];
+  if(run.rogue){settleRogue(s,run);s.materials.crystal=Math.min(1e9,s.materials.crystal+run.materials.crystal);s.materials.iron=Math.min(1e9,s.materials.iron+run.materials.iron);}
   if (success) {
-    s.materials.crystal += run.materials.crystal;
-    s.materials.iron += run.materials.iron;
+    if (run.battle?.won && !(s.bossReports ?? []).includes(run.boss)) s.bossReports = [...(s.bossReports ?? []), run.boss];
+    if(!run.rogue)s.materials.crystal += run.materials.crystal;
+    if(!run.rogue)s.materials.iron += run.materials.iron;
     for (const q of s.quests) {
       q.progress = Math.min(QUESTS[q.id].goal, q.progress + (run.progress[q.id] ?? 0));
       q.ready = q.progress >= QUESTS[q.id].goal;
       if (q.ready) ready.push(q.id);
     }
   }
-  const summary: Summary = { success, materials: { ...run.materials }, ready, progress: { ...run.progress }, harm: { ...run.harm }, potionsUsed: run.potionsUsed };
+  const summary: Summary = { ...(run.rogue?{rogue:{level:run.rogue.level,gold:run.rogue.gold,research:run.rogue.research,equipment:run.rogue.equipment}}:{}), success, energyGained: run.energyGained ?? 0, materials: { ...run.materials }, ready, progress: { ...run.progress }, harm: { ...run.harm }, potionsUsed: run.potionsUsed };
   s.summary = summary; s.run = null;
   return summary;
 }

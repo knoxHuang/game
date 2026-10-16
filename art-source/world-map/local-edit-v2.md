@@ -1,0 +1,15 @@
+# 海图局部修订 v2
+
+工具：内置 imagegen，编辑 `boss-biomes-master.png`。输出 `exec-3104f4c5-bc1d-40aa-98ac-1191403e0c2a.png`。母图 `boss-biomes-v2-master.png`，运行图 `public/assets/map/voyage-boss-biomes-v2.webp`。
+
+只针对初版自审的两处不足：修道院墙体与珊瑚中加入可见瞳孔/眼睑，关键眼簇放在Boss立绘外；终章门扉增加跨立面折返台阶与互相冲突的朝向。前者属于游戏原创污染，后者属于基于原著环境的游戏改编，不将具体楼梯形状说成原著逐字描写。
+
+生成器也重绘了其他区域的部分纹理；潮汐与未知海域的布局、地标和主题保持，不宣称这些区域像素完全相同。新PNG与无损WebP之间已核对RGBA和尺寸完全相同。
+
+压缩：3,274,836 → 2,311,832 字节，减少29.41%；工具 `cwebp -lossless -exact -z 9 -mt -metadata all`，见 `compression-v2.json`。
+
+验收：320×480、360×640、414×896均复查。眼状污染在立绘右侧可辨，终章门扉与折返台阶可以同屏辨认；主祭上下裁切量均为0。本次海图局部视觉修订可进入使用，不代表独立战斗副本或完整美术包通过ready。
+
+## 实际编辑提示词
+
+> Use case: precise-object-edit. EDIT this exact long vertical pixel-art world chart. Preserve canvas size 724x2172 and all geography/landmark positions. Make ONLY TWO LOCAL ART CORRECTIONS. (1) In the submerged monastery band roughly y37%-60%, make the MANY-EYED PRIEST'S CORRUPTION unmistakable at 360px display width. Keep the existing bell towers, ritual water rings and violet-black cloth. Add conspicuous ORGANIC EYES with iris, pupil and coral eyelids growing in clusters from stone arches, cracked walls and coral stalks. These must look like biological watching eyes, NOT ordinary warm windows or lanterns. Use roughly 8-12 eyes total in several clusters, individual larger eyes 25-45 pixels across on this 724px canvas so they remain legible when reduced. Put the most readable clusters to the RIGHT of the central ritual area, around x60%-75%, y43%-53%, plus a smaller left-wall cluster; leave x32%,y50%-56% quiet for the separate foreground Boss. Irises are restrained dull amber, coral is dark wine/violet with weathered salt, eyes embedded naturally in material, no sticker or icon look, no floating eyeballs and no celestial giant eye. The corruption must visibly spread out from monastery architecture. (2) In the TOP R'lyeh-like megalithic city y2%-22%, replace the merely leaning slabs with one huge clearly impossible architectural focal feature: a carved doorway that reads both as a standing gate and a horizontal opening in a terrace, with a continuous stair/terrace loop that turns onto a vertical face and returns at an incompatible orientation. Use a readable impossible/Necker-like stone configuration, not just crooked ruins. Its green-black slime-covered blocks retain monumental scale; show incompatible concave/convex corners and a water reflection with conflicting orientation. This is a GAME ADAPTATION of non-Euclidean dread, no new magical sky symbol. Keep muted sick green atmosphere, no neon. STRICTLY preserve the successful bottom Tide Colossus zone y62%-100%: barnacle/calcium encrusted ships, gill-like teal rock cavities, amber harbor, water/rocks and boat placement; do not redesign or recolor it. Preserve the calm foggy uncharted sea y23%-36%, no new deity landmark. Keep fine deliberate pixel clusters, original palette, lighting, elevated map viewpoint and aspect ratio. No Boss bodies or characters, no UI/text/routes/pins/labels. Do not regenerate the whole composition, do not add a blue vortex or a sky eye. The result must still align with existing map coordinates.

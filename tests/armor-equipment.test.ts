@@ -5,7 +5,7 @@ import { parseSave, validState } from '../src/storage.ts';
 import { startRun } from '../src/maps.ts';
 
 test('开局穿雨衣，穿脱不丢加固进度且存档往返保留状态', () => {
-  const state = freshState();
+  const state = freshState('legacy');
   assert.equal(wearingArmor(state), true);
   state.armor = 1;
   assert.equal(maxHealth(state), 120);
@@ -19,14 +19,14 @@ test('开局穿雨衣，穿脱不丢加固进度且存档往返保留状态', ()
 });
 
 test('旧档默认仍穿雨衣，非法穿戴字段被拒绝', () => {
-  const old = freshState();
+  const old = freshState('legacy');
   delete old.armorEquipped;
   assert.equal(wearingArmor(parseSave(JSON.stringify(old))), true);
   assert.equal(validState({ ...old, armorEquipped: 'false' }), false);
 });
 
 test('调查中不能更换护具，起始生命使用真实穿戴状态', () => {
-  const state = freshState();
+  const state = freshState('legacy');
   state.armor = 1;
   setArmorEquipped(state, false);
   startRun(state);

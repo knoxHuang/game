@@ -40,7 +40,7 @@ export function renderLobby(s: GameState): string {
       ${hotspot('quests','npc','委托',questHint,'ali',aliReady ? '✓' : '!')}
       ${hotspot('archives','panel:warehouse','档案','查看证物与材料档案')}
       ${hotspot('gear','panel:character','整备','职业、武器与防护整备')}
-      ${hotspot('upgrade','panel:upgrade','升级',s.shop===2 ? '调查所已扩建 · 查看设施' : '扩建调查所，开放研究与高级委托','',s.shop===2 ? 'II' : '')}
+      ${hotspot('upgrade','panel:upgrade','升级',s.research?'研究训练与调查所扩建':s.shop===2 ? '调查所已扩建 · 查看设施' : '扩建调查所，开放研究与高级委托','',s.shop===2 ? 'II' : '')}
       ${s.shop===2 ? '<button type="button" class="lobby-keeper" data-action="npc" data-value="lanzhou" aria-label="顾檀 · 高级委托">顾檀 <span>◆</span></button>' : ''}
       <div class="lobby-footer">
         <nav class="lobby-game-tools" aria-label="调查所快捷操作">${illustratedTools(ready.length)}</nav>

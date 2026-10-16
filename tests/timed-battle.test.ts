@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { freshState, acceptQuest } from '../src/model.ts';
+import { freshState, acceptQuest, maxHealth } from '../src/model.ts';
 import { startRun } from '../src/maps.ts';
 import { aliveEnemies, battleWorld, emptyRoom, updateBattle } from '../src/battle.ts';
 import { emptyInput, tick, targetableEnemy } from '../src/engine.ts';
@@ -9,7 +9,7 @@ import { parseSave, validState } from '../src/storage.ts';
 import { battleCamera } from '../src/battle-camera.ts';
 import { distance, isFree, pathDirection } from '../src/geometry.ts';
 const viewports=[{width:320,height:480},{width:360,height:640},{width:414,height:896}];
-function state(){const s=freshState();acceptQuest(s,'K0');startRun(s);return s;}
+function state(){const s=freshState('legacy');acceptQuest(s,'K0');startRun(s);return s;}
 function advance(s:ReturnType<typeof state>,seconds:number,viewport?:{width:number;height:number}){for(let i=0;i<Math.ceil(seconds/.05);i++){s.run!.player.invincible=.65;s.run!.player.fireCd=2;tick(s,{...emptyInput(),viewport},.05);}}
 function skipToBoss(s:ReturnType<typeof state>,viewport=viewports[1]){const r=s.run!,waves=dungeon(r.boss).combat.waves;r.battle!.wave=4;r.battle!.batches=waves.map((w,i)=>i<4?w.batches:0);r.time=waves[4].at;updateBattle(r,0,viewport);updateBattle(r,1,viewport);}
 
@@ -48,7 +48,7 @@ test('Boss 胜利停止残留伤害，退散敌人不发奖励',()=>{
  const s=state(),r=s.run!;skipToBoss(s);const world=battleWorld(r),boss=aliveEnemies(r).find(e=>e.kind==='guardian')!;
  world.enemies.push({...structuredClone(boss),id:'survivor',kind:'beast',hp:28,pos:{x:11,y:14}});boss.hp=1;boss.mode='recover';r.player.fireCd=2;
  world.projectiles.push({id:'kill',pos:{...boss.pos},angle:0,life:1,damage:80,owner:'player',speed:0,splash:0,weakpoint:2},{id:'lingering',pos:{...r.player.pos},angle:0,life:1,damage:80,owner:'enemy',speed:0,splash:0,weakpoint:1});
- tick(s,emptyInput(),.05);assert.equal(r.battle!.won,true);assert.equal(r.player.hp,100);assert.equal(r.materials.crystal,dungeon(r.boss).boss.rewards.crystal);assert.equal(world.projectiles.length,0);assert.equal(world.hazards.length,0);assert.equal(aliveEnemies(r).length,0);const time=r.time;advance(s,2);assert.equal(r.time,time);
+ tick(s,emptyInput(),.05);assert.equal(r.battle!.won,true);assert.equal(r.player.hp,maxHealth(s));assert.equal(s.energy,dungeon(r.boss).boss.rewards.energy);assert.equal(r.materials.crystal,dungeon(r.boss).boss.rewards.crystal);assert.equal(world.projectiles.length,0);assert.equal(world.hazards.length,0);assert.equal(aliveEnemies(r).length,0);const time=r.time;advance(s,2);assert.equal(r.time,time);
 });
 test('二维镜头跟随两轴，并在四个边界限制空白',()=>{
  const arena=dungeon('tide_colossus').arena;

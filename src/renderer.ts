@@ -1,6 +1,7 @@
+import { rogueArea, skillLevel } from './roguelite.ts';
 import { sampleMotion } from './actor-motion.ts';
 import type { MotionSample } from './actor-motion.ts';
-import { battleWorld } from './battle.ts';
+import { battleWorld, bossHealth } from './battle.ts';
 import { battleCamera } from './battle-camera.ts';
 import { dungeon, enemyDefinition, assetKey, bossAttack } from './content/registry.ts';
 import { colorNumber } from './content/schema.ts';
@@ -113,7 +114,8 @@ class WorldScene extends Phaser.Scene {
       const floor=this.add.graphics();floor.fillStyle(colorNumber(definition.biome.wash)).fillRect(0,0,fullWidth,fullHeight);this.staticLayer.add(floor);
       const background=arena.background?assetKey(run.boss,'background'):definition.biome.floorArt.type==='image'?assetKey(run.boss,'floorArt'):'pier-ground';
       const ground=this.add.image(fullWidth/2,fullHeight/2,background).setDisplaySize(fullWidth,fullHeight);this.staticLayer.add(ground);
-      ground.setTint(0x829297); // Quiet the wet timber highlights beneath combat silhouettes.
+      // The first arena has an authored neutral floor; preserve its value hierarchy.
+      if(arena.background!=='/assets/game/dockyard-arena-readable.png')ground.setTint(0x829297);
       for(const obstacle of arena.obstacles)this.tileImage(definition.biome.obstacleArt.type==='image'?assetKey(run.boss,'obstacleArt'):'rock',(obstacle.x-.5)*this.tile,(obstacle.y-.5)*this.tile,this.tile*1.15,0x8c9c9d);
       if(definition.biome.wallArt.type==='image'){
         for(let y=1;y<=arena.height;y++)for(const x of [1,arena.width])this.tileImage(assetKey(run.boss,'wallArt'),(x-.5)*this.tile,(y-.5)*this.tile,this.tile,colorNumber(definition.biome.wall));
@@ -129,10 +131,11 @@ class WorldScene extends Phaser.Scene {
     const motionFor=(id:string,pos:Vec)=>{
       const next=sampleMotion(this.motion.get(id),pos,reduced);this.motion.set(id,next.sample);return next;
     };
-    for(const warning of run.battle?.pending??[]){
+    for(const warning of (run.battle?.pending??[]).filter(p=>!p.queued)){
       const v=this.point(warning.pos),r=this.tile*(warning.kind==='guardian'?1.3:.55);
-      this.effects.lineStyle(2,COLORS.danger,.85).strokeCircle(v.x,v.y,r);
-      this.effects.fillStyle(COLORS.danger,.1).fillCircle(v.x,v.y,r);
+      this.effects.fillStyle(COLORS.danger,.12).fillCircle(v.x,v.y,r);
+      this.effects.lineStyle(4,0x171c28,.95).strokeCircle(v.x,v.y,r);
+      this.effects.lineStyle(2,0xffa28b,1).strokeCircle(v.x,v.y,r);
       this.effects.lineBetween(v.x,v.y-r*.4,v.x,v.y+r*.1);
       this.effects.fillStyle(COLORS.danger).fillCircle(v.x,v.y+r*.4,1.5);
     }
@@ -140,9 +143,16 @@ class WorldScene extends Phaser.Scene {
       if (h.phase > 1.2) continue;
       const v = this.point(h.pos), r = (h.radius ?? (h.boss ? .7 : h.magic ? .85 : .5)) * this.tile;
       if(definition.effects.ground) this.image(h.id,assetKey(run.boss,'effect-ground'),v.x,v.y,r*2.5,.6).setDepth(95);
-      const color = h.magic ? COLORS.arcane : h.boss ? COLORS.danger : 0x66c9bc;
-      this.effects.fillStyle(h.phase >= 0.8 ? (h.magic ? 0xe1aaff : 0xffd28c) : color, h.phase >= 0.8 ? 0.72 : 0.15 + Math.max(0, h.phase) * 0.32).fillCircle(v.x, v.y, r);
-      this.effects.lineStyle(2, color).strokeCircle(v.x, v.y, r);
+      const color = h.magic ? 0xdba0ff : 0xff8171;
+      this.effects.fillStyle(h.phase >= 0.8 ? (h.magic ? 0xe1aaff : 0xffd28c) : color, h.phase >= 0.8 ? 0.42 : 0.11 + Math.max(0, h.phase) * 0.14).fillCircle(v.x, v.y, r);
+      // The double edge marks the real damage radius; static hatching survives reduced motion.
+      this.effects.lineStyle(5,0x171c28,.95).strokeCircle(v.x,v.y,r);
+      this.effects.lineStyle(2.5,color,1).strokeCircle(v.x,v.y,r);
+      this.effects.lineStyle(1,color,.55);
+      for(const offset of [-.4,0,.4]){
+        const center=offset*r/Math.SQRT2,extent=Math.sqrt(1-offset*offset)*r*.78/Math.SQRT2;
+        this.effects.lineBetween(v.x+center-extent,v.y+center+extent,v.x+center+extent,v.y+center-extent);
+      }
       if (h.magic) { this.effects.lineStyle(1, 0xe0b4ec, 0.9).strokeCircle(v.x, v.y, r * 0.58); this.effects.lineBetween(v.x - r * 0.3, v.y, v.x + r * 0.3, v.y); }
     }
     for (const o of room.objects.filter(o => !o.used)) {
@@ -152,16 +162,54 @@ class WorldScene extends Phaser.Scene {
       if(o.kind==='exit')sprite.setDepth(v.y-70);
       if (o.quest || o.kind === 'survey') this.effects.lineStyle(1.5, COLORS.gold).strokeCircle(v.x, v.y - this.tile * 0.7, 3);
     }
+    if(run.rogue){
+      const level=skillLevel(s,'lantern');
+      if(level){const v=this.point(run.player.pos),radius=(1.2+level*.18)*rogueArea(s)*this.tile;this.effects.lineStyle(1,0xe2bb69,.55).strokeCircle(v.x,v.y,radius);}
+      for(const field of run.rogue.fields){const v=this.point(field.pos),radius=(1+field.level*.16)*rogueArea(s)*this.tile;this.effects.fillStyle(0x77ddcc,.12).fillCircle(v.x,v.y,radius);this.effects.lineStyle(2,0x84e1ca,.7).strokeCircle(v.x,v.y,radius);this.effects.lineBetween(v.x-radius*.5,v.y,v.x+radius*.5,v.y);}
+    }
     for (const drop of room.drops.filter(d => !d.taken)) {
       const v = this.point(drop.pos), icon = drop.quest ? QUESTS[drop.quest].icon : drop.material ?? 'sample';
-      this.image(drop.id, icon, v.x, v.y, this.tile * (drop.quest ? .42 : .3), .9).setDepth(15);
-      if (drop.quest) this.shadows.lineStyle(1.5, COLORS.gold,.8).lineBetween(v.x-3,v.y+this.tile*.25,v.x+3,v.y+this.tile*.25);
+      if(drop.xp&&!drop.material&&!drop.quest){
+        const diamond=[{x:v.x,y:v.y-4},{x:v.x+3,y:v.y},{x:v.x,y:v.y+4},{x:v.x-3,y:v.y}];
+        this.effects.fillStyle(0xadefdf,1).fillPoints(diamond,true);
+        this.effects.lineStyle(1.5,0x10232d,1).strokePoints(diamond,true);continue;
+      }
+      // Static dark backing and category shapes keep tiny loot separate from wet wood.
+      const size=Math.max(14,this.tile*(drop.quest?.55:.46)),half=size/2;
+      this.shadows.fillStyle(0x101824,.96).fillRoundedRect(v.x-half,v.y-half,size,size,3);
+      this.shadows.lineStyle(1,drop.quest?0xf1d28b:0xc2d8e7,1).strokeRoundedRect(v.x-half,v.y-half,size,size,3);
+      this.image(drop.id, icon, v.x, v.y, size-4).setDepth(15);
+      if(drop.quest)this.shadows.fillStyle(0xf1d28b).fillTriangle(v.x,v.y-half-4,v.x-3,v.y-half-1,v.x+3,v.y-half-1);
     }
     for (const b of room.projectiles) {
-      const v = this.point(b.pos), color = b.owner === 'player' ? (s.career === 'occultist' ? COLORS.teal : COLORS.gold) : COLORS.danger;
-      if(b.owner==='enemy'&&definition.effects.projectile) this.image(b.id,assetKey(run.boss,'effect-projectile'),v.x,v.y,this.tile*.6).setRotation(b.angle+Math.PI/2).setDepth(101);
-      else this.effects.fillStyle(color).fillCircle(v.x, v.y, this.tile * (b.owner === 'player' ? 0.14 : 0.16));
-      if (b.owner === 'player') this.effects.lineStyle(2, color, 0.6).lineBetween(v.x, v.y, v.x - Math.cos(b.angle) * this.tile * 0.3, v.y - Math.sin(b.angle) * this.tile * 0.3);
+      const v = this.point(b.pos), dx = Math.cos(b.angle), dy = Math.sin(b.angle);
+      if (b.owner === 'enemy') {
+        if (definition.effects.projectile) this.image(b.id,assetKey(run.boss,'effect-projectile'),v.x,v.y,this.tile*.6).setRotation(b.angle+Math.PI/2).setDepth(101);
+        else {
+          this.effects.lineStyle(4,0x341d26,1).lineBetween(v.x-dx*5,v.y-dy*5,v.x+dx*3,v.y+dy*3);
+          this.effects.fillStyle(COLORS.danger).fillCircle(v.x,v.y,3);
+          this.effects.fillStyle(0xffc7a0).fillRect(v.x-1,v.y-1,2,2);
+        }
+        continue;
+      }
+      const arcane = s.career === 'occultist', harpoon = s.career === 'harpooner';
+      const color = arcane ? 0x8bdccf : 0xe8bb67;
+      const length = this.tile * (harpoon ? .62 : arcane ? .26 : .4);
+      const line = (width:number,tint:number,alpha:number,from:number,to:number) =>
+        this.effects.lineStyle(width,tint,alpha).lineBetween(v.x-dx*from,v.y-dy*from,v.x+dx*to,v.y+dy*to);
+      // Short directional silhouettes replace the oversized round pellets.
+      if (!reduced) line(harpoon?3:5,color,.14,length*1.7,0);
+      line(harpoon?4:arcane?5:3,0x13252a,1,length,2);
+      line(harpoon?2:arcane?3:2,color,1,length,1);
+      line(1,0xfff1c5,1,length*.55,1);
+      if (harpoon) {
+        this.effects.lineStyle(2,0xd9ddd0).lineBetween(v.x-dx*5-dy*3,v.y-dy*5+dx*3,v.x+dx*3,v.y+dy*3);
+        this.effects.lineBetween(v.x+dx*3,v.y+dy*3,v.x-dx*5+dy*3,v.y-dy*5-dx*3);
+      } else if (arcane) {
+        this.effects.lineStyle(1,0xd6fff0).strokePoints([
+          {x:v.x+dx*4,y:v.y+dy*4},{x:v.x-dy*3,y:v.y+dx*3},
+          {x:v.x-dx*4,y:v.y-dy*4},{x:v.x+dy*3,y:v.y-dx*3}],true);
+      }
     }
     for (const e of room.enemies.filter(e => e.hp > 0 || e.timer < .45)) {
       const v = this.point(e.pos);
@@ -170,7 +218,7 @@ class WorldScene extends Phaser.Scene {
       const actor=enemyDefinition(run.boss,e.kind), sprite=actor.sprite;
       const key=sprite.type==='builtin'&&e.kind!=='guardian'?actorKey(e.kind,facing(e.mode==='windup'||e.mode==='attack'?e.angle:direction(e.pos,p.pos)),motion.frame)+(motion.frame<0?'-rest':''):art.key;
       this.shadows.fillStyle(0x030c10,.6).fillEllipse(v.x,v.y+this.tile*.4,this.tile*actor.size*.85,this.tile*.32);
-      const image = this.image(e.id,key,v.x,v.y-this.tile*.12,this.tile*actor.size*(e.kind==='guardian'?1:1.25),e.hp===0?Math.max(0,1-e.timer/.45):1,art.frame);
+      const image = this.image(e.id,key,v.x,v.y-this.tile*(e.kind==='guardian'?.12:.18),this.tile*actor.size*(e.kind==='guardian'?1:1.36),e.hp===0?Math.max(0,1-e.timer/.45):1,art.frame);
       image.setRotation(0);
       if(sprite.type==='builtin'&&!reduced){
         if(e.mode==='windup')image.setScale(image.scaleX*1.08,image.scaleY*.88);
@@ -179,9 +227,9 @@ class WorldScene extends Phaser.Scene {
       }
       image.setOrigin(sprite.type==='sheet'?sprite.anchor.x:.5,sprite.type==='sheet'?sprite.anchor.y:.5);
       if(e.hp===0) continue;
-      const phaseTwo = e.kind === 'guardian' && e.hp <= definition.boss.hp * definition.boss.phaseAt;
+      const phaseTwo = e.kind === 'guardian' && e.hp <= bossHealth(run) * definition.boss.phaseAt;
       const bossTint = colorNumber(definition.boss.tint);
-      image.setTint(e.flash > 0 ? 0xffffff : e.mode === 'windup' ? 0xffaa7b : phaseTwo ? 0xb6a0c5 : e.kind === 'guardian' ? bossTint : 0xffffff);
+      image.setTint(e.flash > 0 ? 0xffffff : e.mode === 'windup' ? 0xffd5b8 : phaseTwo ? 0xf2dfff : e.kind === 'guardian' ? bossTint : 0xffffff);
       if (e.kind === 'guardian' && e.mode === 'recover') {
         this.effects.fillStyle(0x87f4d0, 0.2 + (reduced?0:Math.sin(run.time * 10) * 0.05)).fillCircle(v.x, v.y + this.tile * 0.42, this.tile * 0.42);
         this.effects.lineStyle(3, 0xb8ffe0, 0.95).strokeCircle(v.x, v.y + this.tile * 0.42, this.tile * 0.29);
@@ -192,25 +240,28 @@ class WorldScene extends Phaser.Scene {
         this.effects.lineStyle(e.kind === 'guardian' ? this.tile * 1.4 : 3, COLORS.danger, 0.2).lineBetween(v.x, v.y, v.x + Math.cos(e.angle) * length, v.y + Math.sin(e.angle) * length);
         this.effects.lineStyle(2, COLORS.danger, 0.95).lineBetween(v.x, v.y, v.x + Math.cos(e.angle) * length, v.y + Math.sin(e.angle) * length);
       }
-      const enemyMaxHp = enemyDefinition(run.boss,e.kind).hp;
+      const enemyMaxHp = enemyDefinition(run.boss,e.kind).hp*(e.elite?2:1);
+      if(e.elite){this.effects.lineStyle(2,0xe4c578,.9).strokeCircle(v.x,v.y,this.tile*.65);this.effects.fillStyle(0xe4c578).fillRect(v.x-3,v.y-this.tile,6,6);}
       if (e.hp < enemyMaxHp && e.kind !== 'guardian') {
         const maxHp = enemyMaxHp, width = this.tile * 1.25, height = Math.max(3, Math.min(5, this.tile * 0.18));
-        const left = v.x - width / 2, top = v.y - this.tile * 0.82;
+        const left = v.x - width / 2, top = v.y - this.tile * 1.05;
         this.effects.fillStyle(COLORS.ink, 0.95).fillRect(left, top, width, height);
         this.effects.fillStyle(COLORS.danger).fillRect(left + 1, top + 1, (width - 2) * e.hp / maxHp, height - 2);
       }
     }
-    const selected = targetableEnemy(s, careerStats(s).range);
+    const selected = targetableEnemy(s, careerStats(s).range, {width:w,height:h});
     if (selected) {
       const targetPos = this.point(selected.pos);
       this.effects.lineStyle(1.5, COLORS.teal, 0.95).strokeCircle(targetPos.x, targetPos.y + this.tile * 0.22, this.tile * (enemyRadius(selected,run.boss) + 0.12));
     }
     const v = this.point(p.pos), motion=motionFor('player',p.pos);
     this.shadows.fillStyle(0x020b0f,.7).fillEllipse(v.x,v.y+this.tile*.4,this.tile*.9,this.tile*.3);
-    this.shadows.lineStyle(1.5,COLORS.teal,.85).strokeEllipse(v.x,v.y+this.tile*.4,this.tile*.85,this.tile*.3);
-    const hero = this.image('player', actorKey('player', facing(p.action === 'attack' || p.action === 'skill' ? p.angle : p.facing), motion.frame)+(motion.frame<0?'-rest':''), v.x, v.y - this.tile * .15, this.tile * 1.5, p.invincible > 0 ? .65 : 1);
+    this.shadows.lineStyle(p.invincible>0?2:1.5,p.invincible>0?0xffe4a0:COLORS.teal,.9).strokeEllipse(v.x,v.y+this.tile*.4,this.tile*.85,this.tile*.3);
+    const hero = this.image('player', actorKey('player', facing(p.action === 'attack' || p.action === 'skill' ? p.angle : p.facing), motion.frame)+(motion.frame<0?'-rest':''), v.x, v.y - this.tile * .25, this.tile * 1.7, 1);
+    // Keep the yellow investigator readable inside large bosses and dense groups.
+    hero.setDepth(30);
     hero.setRotation(!reduced&&p.action==='dodge'?.2:0);
-    hero.setTint(p.action === 'hurt' ? 0xff9988 : s.career === 'occultist' ? 0xd4edda : 0xffffff);
+    hero.setTint(p.action === 'hurt' ? 0xffddaa : 0xffffff);
     if (!reduced) {
       if(!motion.moving)hero.setScale(hero.scaleX,hero.scaleY*(1+Math.sin(run.time*3)*.012));
       if(p.action==='attack'&&p.timer<.08){hero.x-=Math.cos(p.angle)*2;hero.y-=Math.sin(p.angle)*2;}
@@ -219,30 +270,49 @@ class WorldScene extends Phaser.Scene {
     if (p.action === 'dodge') this.effects.lineStyle(2, COLORS.teal, 0.8).strokeCircle(v.x, v.y, this.tile * 0.5);
     if ((p.action === 'attack' || p.action === 'skill') && p.timer < 0.12) {
       const color = s.career === 'occultist' ? COLORS.teal : COLORS.gold;
-      this.effects.fillStyle(color, 0.9).fillCircle(v.x + Math.cos(p.angle) * this.tile * 0.42, v.y + Math.sin(p.angle) * this.tile * 0.42, this.tile * (p.action === 'skill' ? 0.18 : 0.12));
-      this.effects.lineStyle(2, color, 0.85).lineBetween(v.x, v.y, v.x + Math.cos(p.angle) * this.tile * 0.5, v.y + Math.sin(p.angle) * this.tile * 0.5);
+      const dx=Math.cos(p.angle),dy=Math.sin(p.angle),mx=v.x+dx*this.tile*.42,my=v.y+dy*this.tile*.42;
+      if (p.timer < .07) {
+        this.effects.lineStyle(2,color,.9).lineBetween(mx-dx*2,my-dy*2,mx+dx*6,my+dy*6);
+        this.effects.lineStyle(1,0xffedbd).lineBetween(mx-dy*3,my+dx*3,mx+dy*3,my-dx*3);
+      }
     }
     const target = nearbyInteraction(s);
     this.label.setVisible(!!target);
-    if (target) this.label.setPosition(v.x, v.y - this.tile * 0.75).setText(target.locked ?? target.label);
+    if (target) this.label.setPosition(v.x, v.y - this.tile * 1.1).setText(target.locked ?? target.label);
     if (run.survey > 0) this.effects.lineStyle(3, COLORS.teal).strokeCircle(v.x, v.y, this.tile * 0.65);
     if (boss) {
       const location=this.point(boss.pos),north=location.y<camera.top,south=location.y>camera.top+camera.fieldHeight,west=location.x<0,east=location.x>w;
       this.bossLocator.setVisible(north||south||west||east);
       if(north||south||west||east)this.bossLocator.setPosition(w/2,north?camera.top+16:south?camera.top+camera.fieldHeight-16:camera.top+camera.fieldHeight/2).setText(`${north?'↑':south?'↓':west?'←':'→'} ${BOSSES[run.boss].name}`);
-      this.effects.fillStyle(COLORS.ink, 0.98).fillRoundedRect(8, 66, w - 16, 32, 3);
-      this.effects.fillStyle(COLORS.stone).fillRoundedRect(12, 89, w - 24, 7, 3);
-      this.effects.fillStyle(boss.mode === 'recover' ? COLORS.teal : boss.hp <= definition.boss.hp * definition.boss.phaseAt ? 0xa76fba : COLORS.danger).fillRoundedRect(12, 89, (w - 24) * boss.hp / definition.boss.hp, 7, 3);
-      const threat = boss.mode === 'recover' ? '弱点暴露 · 输出窗口' : boss.hp <= definition.boss.hp * definition.boss.phaseAt ? '第二阶段 · 危险增强' : '巨型威胁 · 注意预警';
-      this.bossTitle.setPosition(w / 2, 68).setOrigin(0.5, 0).setText(`${BOSSES[run.boss].name} · ${threat}`).setVisible(true);
+      this.effects.fillStyle(COLORS.ink, 0.98).fillRoundedRect(8, 86, w - 16, 32, 3);
+      this.effects.fillStyle(COLORS.stone).fillRoundedRect(12, 109, w - 24, 7, 3);
+      this.effects.fillStyle(boss.mode === 'recover' ? COLORS.teal : boss.hp <= bossHealth(run) * definition.boss.phaseAt ? 0xa76fba : COLORS.danger).fillRoundedRect(12, 109, (w - 24) * boss.hp / bossHealth(run), 7, 3);
+      const threat = boss.mode === 'recover' ? '弱点暴露 · 输出窗口' : boss.hp <= bossHealth(run) * definition.boss.phaseAt ? '第二阶段 · 危险增强' : '巨型威胁 · 注意预警';
+      this.bossTitle.setPosition(w / 2, 88).setOrigin(0.5, 0).setText(`${BOSSES[run.boss].name} · ${threat}`).setVisible(true);
     } else {
       this.bossTitle.setVisible(false);
       this.bossLocator.setVisible(false);
     }
   }
   showEvent(event: GameEvent) {
+    if(event.kind==='ability'&&event.pos){
+      const to=this.point(event.pos),graphic=this.add.graphics().setDepth(104);
+      graphic.lineStyle(2,event.ability==='arc'?0xb5e4ff:event.ability==='sigil'?0x8de6d0:0xd8bf82,.8);
+      if(event.from){const from=this.point(event.from);graphic.lineBetween(from.x,from.y,to.x,to.y);graphic.lineStyle(1,0xffffff,.9).lineBetween(from.x+1,from.y,to.x+1,to.y);}
+      if(!event.from||event.ability==='sigil')graphic.strokeCircle(to.x,to.y,(event.radius??2)*this.tile);
+      this.time.delayedCall(130,()=>graphic.destroy());return;
+    }
     if (!event.pos || event.damage === undefined) return;
     const v = this.point(event.pos);
+    if (event.kind === 'hit') {
+      const spark=this.add.graphics().setDepth(145);
+      spark.lineStyle(2,0xffdea0,.95);
+      for (let i=0;i<4;i++) {
+        const a=Math.PI/4+i*Math.PI/2;
+        spark.lineBetween(v.x+Math.cos(a)*3,v.y+Math.sin(a)*3,v.x+Math.cos(a)*8,v.y+Math.sin(a)*8);
+      }
+      this.time.delayedCall(85,()=>spark.destroy());
+    }
     const text = event.text ? `${event.damage} · ${event.text}` : String(event.damage);
     const t = this.add.text(v.x, v.y - this.tile * 0.8, text, { fontSize: '16px', color: event.text ? '#9ffff0' : '#ffe9b0', fontFamily: 'sans-serif', stroke: '#17232c', strokeThickness: 3 }).setOrigin(0.5).setDepth(150);
     this.tweens.add({ targets: t, y: t.y - 18, alpha: 0, duration: 450, onComplete: () => t.destroy() });

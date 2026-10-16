@@ -5,15 +5,19 @@
   "status": "prototype",
   "name": "万眼主祭",
   "zone": "沉没修道院",
-  "description": "多重法术落点与环形脉冲；眼部开启时攻击。",
+  "description": "眼状珊瑚、腐蚀钟体与层叠水纹蔓延至修道院；主眼开启时攻击。",
   "danger": 2,
   "recommendedHealth": 120,
   "recommendedDps": 26,
   "unlockShop": 2,
   "map": {
-    "x": 24,
-    "y": 47,
-    "order": 2
+    "x": 32,
+    "y": 56,
+    "order": 4,
+    "region": "outer_ruins",
+    "requires": [
+      "tide_colossus"
+    ]
   },
   "lore": {
     "kind": "original",
@@ -25,7 +29,7 @@
   "art": {
     "portrait": "/assets/bosses/many-eyed-priest.png",
     "card": null,
-    "brief": "沿用已确认的精细像素海港画风；当前使用历史画像和共用战斗资产，独立小头像、绘图卡、专用动作图集与主题场景待补齐。",
+    "brief": "原创污染规则：眼状珊瑚侵入修道院窗与回廊，钟室和淹没祭台形成仪式中心。本轮只完成世界海图环境，独立战区与完整动作资源仍待补齐。",
     "reviewed": false
   },
   "biome": {
@@ -107,7 +111,8 @@
     ],
     "rewards": {
       "crystal": 3,
-      "iron": 3
+      "iron": 3,
+      "energy": 1000
     },
     "sprite": {
       "type": "builtin",
@@ -134,7 +139,8 @@
       "sprite": {
         "type": "builtin",
         "key": "beast"
-      }
+      },
+      "energy": 6
     },
     "bug": {
       "name": "附蛰虫",
@@ -155,7 +161,8 @@
       "sprite": {
         "type": "builtin",
         "key": "bug"
-      }
+      },
+      "energy": 9
     },
     "cultist": {
       "name": "溺亡秘仪师",
@@ -176,7 +183,8 @@
       "sprite": {
         "type": "builtin",
         "key": "cultist"
-      }
+      },
+      "energy": 15
     }
   },
   "effects": {

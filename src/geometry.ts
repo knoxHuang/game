@@ -36,7 +36,9 @@ export function lineClear(dungeonId: string, a: Vec, b: Vec, radius = 0.02): boo
 export function pathDirection(dungeonId: string, from: Vec, to: Vec, radius = 0.31): number | null {
   if (lineClear(dungeonId, from, to, radius)) return direction(from, to);
   const start = { x: Math.round(from.x), y: Math.round(from.y) };
-  const goal = { x: Math.round(to.x), y: Math.round(to.y) };
+  // A small player can stand beside cover that the pursuer cannot occupy.
+  // Route to an adjacent body-safe cell rather than an unreachable target cell.
+  const goal = nearestFreePoint(dungeonId,{ x: Math.round(to.x), y: Math.round(to.y) },radius);
   const key = (p: Vec) => `${p.x},${p.y}`;
   const queue: { p: Vec; first: Vec | null }[] = [{ p: start, first: null }];
   const seen = new Set([key(start)]);

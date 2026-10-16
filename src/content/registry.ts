@@ -2,7 +2,7 @@ import catalog from './catalog.generated.json' with { type: 'json' };
 import { dungeonSchema } from './schema.ts';
 import type { DungeonDefinition, EnemyRole } from './schema.ts';
 
-export const DUNGEONS: readonly DungeonDefinition[] = catalog.map(value => dungeonSchema.parse(value)).sort((a,b)=>a.map.order-b.map.order || a.id.localeCompare(b.id));
+export const DUNGEONS: readonly DungeonDefinition[] = catalog.map(value => dungeonSchema.parse(value)).sort((a,b)=>a.danger-b.danger || a.map.order-b.map.order || a.id.localeCompare(b.id));
 export const DUNGEONS_BY_ID: Readonly<Record<string,DungeonDefinition>> = Object.fromEntries(DUNGEONS.map(d=>[d.id,d]));
 export function isDungeonId(id: unknown): id is string { return typeof id==='string' && Object.hasOwn(DUNGEONS_BY_ID,id); }
 export function dungeon(id: string): DungeonDefinition {

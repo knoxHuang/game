@@ -5,15 +5,19 @@
   "status": "prototype",
   "name": "克苏鲁化身",
   "zone": "星蚀裂隙",
-  "description": "宽幅星隙弹幕与场地落点；核心显现时攻击。",
+  "description": "绿渍巨石与方向难辨的巨大门扉围出未知海城；星核显现时攻击。",
   "danger": 3,
   "recommendedHealth": 140,
   "recommendedDps": 35,
   "unlockShop": 2,
   "map": {
-    "x": 73,
-    "y": 20,
-    "order": 1
+    "x": 54,
+    "y": 17,
+    "order": 12,
+    "region": "forbidden",
+    "requires": [
+      "many_eyed_priest"
+    ]
   },
   "lore": {
     "kind": "adaptation",
@@ -22,16 +26,16 @@
       {
         "title": "The Call of Cthulhu",
         "url": "https://www.hplovecraft.com/writings/texts/fiction/cc.aspx",
-        "evidence": "原著雕像描述包含章鱼状头部、面部触须、鳞质躯体、巨爪和狭长翅膀。"
+        "evidence": "原著雕像描述有触须头部、鳞质躯体、巨爪和翅膀；拉莱耶段落描写绿渍巨石、黏液、巨大门扉和异常几何。"
       }
     ],
-    "interpretation": "现有游戏原创原型；眷属编队与攻击行为为玩法改编，尚未完成造型和关系审核。",
+    "interpretation": "克苏鲁化身为本游戏投影设定。世界海图以原著拉莱耶环境为依据；星核、星蚀招式与具体污染扩散方式是游戏改编，不将巨眼或引力漩涡当作原著固有特征。",
     "reviewed": false
   },
   "art": {
     "portrait": "/assets/bosses/cthulhu-avatar.png",
     "card": null,
-    "brief": "沿用已确认的精细像素海港画风；当前使用历史画像和共用战斗资产，独立小头像、绘图卡、专用动作图集与主题场景待补齐。",
+    "brief": "海图环境依据原著的绿渍巨石、黏液、巨大门扉与异常几何；化身、星核、污染扩散与战斗能力为游戏改编。不采用无来源的天空巨眼或蓝色引力涡。独立战区与完整动作资源仍待补齐。",
     "reviewed": false
   },
   "biome": {
@@ -113,7 +117,8 @@
     ],
     "rewards": {
       "crystal": 3,
-      "iron": 3
+      "iron": 3,
+      "energy": 2500
     },
     "sprite": {
       "type": "builtin",
@@ -140,7 +145,8 @@
       "sprite": {
         "type": "builtin",
         "key": "beast"
-      }
+      },
+      "energy": 20
     },
     "bug": {
       "name": "附蛰虫",
@@ -161,7 +167,8 @@
       "sprite": {
         "type": "builtin",
         "key": "bug"
-      }
+      },
+      "energy": 30
     },
     "cultist": {
       "name": "溺亡秘仪师",
@@ -182,7 +189,8 @@
       "sprite": {
         "type": "builtin",
         "key": "cultist"
-      }
+      },
+      "energy": 50
     }
   },
   "effects": {

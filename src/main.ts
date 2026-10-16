@@ -1,4 +1,5 @@
-import { dungeon, isDungeonId } from './content/registry.ts';
+import { chooseSkill, rerollSkills, train, equip, improveEquipment, unlockCareer, convertLegacy } from './roguelite.ts';
+import { isDungeonId } from './content/registry.ts';
 import './styles.css';
 import './game-ui.css';
 import './expedition.css';
@@ -82,7 +83,7 @@ async function commit(mutator: (next: GameState) => string | null, after?: (next
   if (validationError) { busy = false; if (page === 'run') paused = true; view.toastMessage(validationError); refresh(true); return; }
   const retry = async () => { await commit(mutator, after); };
   try {
-    await store.save(next);
+    await store.save(next, state&&!state.research&&next.research?state:undefined);
     state = next; busy = false; savingError = null; currentOperation = null;
     after?.(next);
     refresh(true);
@@ -109,9 +110,14 @@ function recordAutosave() {
   void tracked.then(()=>{if(autoSaveDirty&&!savingError){autoSaveDirty=false;nextAutoSave=null;recordAutosave();}});
 }
 
+function replaceProfile(target:GameState,source:GameState){
+  for(const key of Object.keys(target))Reflect.deleteProperty(target,key);
+  Object.assign(target,source);
+}
+
 function startNewGame() {
   if (busy) return;
-  void commit(next => { Object.assign(next,freshState()); return null; }, () => { page = 'shop'; paused = false; view.closePanel(); audio.unlock(); });
+  void commit(next => { replaceProfile(next,freshState()); return null; }, () => { page = 'shop'; paused = false; view.closePanel(); audio.unlock(); });
 }
 
 function setRunPage() {
@@ -122,11 +128,15 @@ function setRunPage() {
   if (page === 'run') view.openPanel('pause');
 }
 
-function startAdventure() {
+function startAdventure(target?: BossId) {
   if (!state || busy) return;
+  if (state.run && target && target !== state.run.boss) { view.toastMessage('请先结束当前调查。'); return; }
   if (state.run) { page = 'run'; paused = false; audio.unlock(); view.closePanel(); refresh(true); return; }
   audio.unlock();
-  void commit(next => startRun(next), next => {
+  void commit(next => {
+    if (target && isDungeonId(target)) next.selectedBoss = target;
+    return startRun(next);
+  }, next => {
     page = 'run'; paused = false;
     audio.setMode('dungeon');
     view.closePanel();
@@ -166,17 +176,20 @@ function route(action: string, value?: string) {
     if (!state || state.run) { view.toastMessage('调查进行中时不能更换职业。'); return; }
     const id = value as CareerId;
     if (id !== 'investigator' && id !== 'occultist' && id !== 'harpooner') return;
-    void commit(next => { next.career = id; return null; }, () => { audio.play('ui'); view.toastMessage('职业已切换。'); view.openPanel('character', 'career'); });
+    void commit(next => { if(next.research)return unlockCareer(next,id);next.career = id; return null; }, () => { audio.play('ui'); view.toastMessage('职业已切换。'); view.openPanel('character', 'career'); });
     return;
   }
-  if (action === 'boss') {
-    if (!state || state.run) { view.toastMessage('调查进行中时不能更换副本目标。'); return; }
-    const id = value as BossId;
-    if (!isDungeonId(id)) return;
-    if (state.shop < dungeon(id).unlockShop) { view.toastMessage('扩建调查所后开放该副本。'); return; }
-    void commit(next => { next.selectedBoss = id; return null; }, () => { audio.play('ui'); view.openPanel('prepare'); });
-    return;
+  if(action==='choose-skill'||action==='reroll-skills'){
+    clearInputs();void commit(next=>action==='choose-skill'?chooseSkill(next,value??''):rerollSkills(next),()=>{paused=false;view.closePanel();audio.play('upgrade');audio.setMode(state?.run?.rogue?.offers.length?'silent':'dungeon');});return;
   }
+  if(action==='train'||action==='equip-rogue'||action==='improve-equipment'){
+    void commit(next=>action==='train'?train(next,value??''):action==='equip-rogue'?equip(next,value??''):improveEquipment(next,value??''),()=>view.toastMessage('整备已保存。'));return;
+  }
+  if(action==='convert-rogue'&&state&&!state.research){
+    view.openConfirmation('转换为割草成长规则？',`旧累计能量 ${state.energy??0} 将等额转换为可消费的研究能量。之后每局从 Lv.1 开始，保留案件、冥币与职业，旧武器和护具转为对应新装备。旧职业能力返还 90 冥币、4 样本和 2 零件。旧等级属性结束生效，转换前档案会单独备份。`,'convert-rogue');return;
+  }
+  if(action==='confirm:convert-rogue'){void commit(convertLegacy,()=>{view.closePanel();view.openPanel('upgrade');view.toastMessage('成长规则已转换。原档案已备份，可在研究台导出。');});return;}
+  if(action==='export-legacy-backup'){void exportSave('legacy-before-roguelite');return;}
   if (action === 'new-game') {
     audio.unlock();
     if (state) view.openConfirmation('重新开始调查？', '当前版本的调查所、物资和案件进度会被新游戏替换。需要保留的话，请先导出新版存档。', 'new-game');
@@ -188,16 +201,16 @@ function route(action: string, value?: string) {
   if (action === 'confirm:abandon') { const id = chooseQuestId(value); if (id) void commit(next => abandonQuest(next, id), () => view.toastMessage('案件已放弃。')); return; }
   if (action === 'confirm:exit') { finaliseRun(true); return; }
   if (action === 'confirm:abandon-run') { finaliseRun(false); return; }
-  if (action === 'abandon-run') { view.openConfirmation('结束本次调查？', '本次未撤离的证据和物资会丢失，案件进度不会增加。', 'abandon-run'); return; }
+  if (action === 'abandon-run') { view.openConfirmation('结束本次调查？', state?.run?.rogue?'本局等级与技能清空。研究能量、金币、装备与材料保留，案件进度不会增加。':'本次未撤离的证据和物资会丢失，案件进度不会增加。', 'abandon-run'); return; }
   if (action === 'confirm:import-save' && pendingImport) {
     const saved = pendingImport; pendingImport = null;
-    void commit(next => { Object.assign(next, saved); return null; }, next => { page = next.run ? 'run' : next.summary ? 'result' : 'shop'; paused = page === 'run'; view.closePanel(); });
+    void commit(next => { replaceProfile(next,saved); return null; }, next => { page = next.run ? 'run' : next.summary ? 'result' : 'shop'; paused = page === 'run'; view.closePanel(); if(paused)view.openPanel('pause'); });
     return;
   }
   if (action === 'cancel') { pendingImport = null; if (page === 'run') { paused = true; view.openPanel('pause'); } refresh(true); return; }
   if (action === 'panel:pause'||action === 'pause') { if (page === 'run') { clearInputs(); paused = true; audio.setMode('silent'); view.openPanel('pause'); } return; }
   if (action === 'resume') { if (savingError) { view.toastMessage('请先恢复本机存档，再继续冒险。'); return; } clearInputs(); paused = false; audio.unlock(); audio.setMode('dungeon'); view.closePanel(); refresh(true); return; }
-  if (action === 'start-run') { startAdventure(); return; }
+  if (action === 'start-run') { startAdventure(value && isDungeonId(value) ? value : undefined); return; }
   if (action === 'return-shop') {
     void commit(next => { next.summary = null; return null; }, () => {
       page = 'shop'; paused = false; view.closePanel(); audio.setMode('shop');
@@ -223,7 +236,7 @@ function route(action: string, value?: string) {
   if (action === 'import-file') {
     try {
       pendingImport = parseSave(value ?? '');
-      view.openConfirmation('导入本机存档？', '将切换到 ' + (pendingImport.shop === 1 ? '基础联络站' : '扩建调查所') + '。现有新版进度会被替换。', 'import-save');
+      view.openConfirmation('导入本机存档？', '将切换到 ' + (pendingImport.shop === 1 ? '基础联络站' : '扩建调查所') + '。成长规则：'+(pendingImport.research?'割草构筑':'旧档永久经验')+'。现有新版进度会被替换。', 'import-save');
     } catch (error) { view.toastMessage(error instanceof Error ? error.message : '存档文件无法读取。'); }
     return;
   }
@@ -283,12 +296,12 @@ function route(action: string, value?: string) {
   }
 }
 
-async function exportSave() {
+async function exportSave(key='profile') {
   try {
-    const raw = await store.raw();
-    if (raw === null) { view.toastMessage('当前没有可导出的存档。'); return; }
+    const raw = await store.raw(key);
+    if (raw === null) { view.toastMessage(key==='profile'?'当前没有可导出的存档。':'尚未生成成长转换前备份。'); return; }
     const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));
-    const link=document.createElement('a');link.href=url;link.download='雾港调查所-本地存档.json';link.click();
+    const link=document.createElement('a');link.href=url;link.download=key==='profile'?'雾港调查所-本地存档.json':'雾港调查所-成长转换前备份.json';link.click();
     window.setTimeout(()=>URL.revokeObjectURL(url),1000);
     view.toastMessage('存档文件已导出。');
   } catch (error) { view.toastMessage(error instanceof Error?error.message:'无法导出本机存档。'); }
@@ -319,6 +332,7 @@ async function openStoredGame() {
 
 function frame(delta:number) {
   if(!state||page!=='run'||!state.run||paused||busy||savingError||startupError)return;
+  if(state.run.rogue?.offers.length)return;
   const keyboardX=(keys.has('ArrowRight')||keys.has('KeyD')?1:0)-(keys.has('ArrowLeft')||keys.has('KeyA')?1:0);
   const keyboardY=(keys.has('ArrowDown')||keys.has('KeyS')?1:0)-(keys.has('ArrowUp')||keys.has('KeyW')?1:0);
   input.move={x:touchMove.x+keyboardX,y:touchMove.y+keyboardY};
@@ -340,12 +354,13 @@ function frame(delta:number) {
   const result=tick(state,input,delta);
   for(const event of result.events){
     if(event.kind==='attack')audio.play('attack');else if(event.kind==='hit')audio.play('hit');else if(event.kind==='hurt')audio.play('hurt');else if(event.kind==='dodge')audio.play('dodge');else if(event.kind==='loot')audio.play('loot');else if(event.kind==='task')audio.play('task');
-    if(event.damage!==undefined)renderer?.event(event);
+    if(event.damage!==undefined||event.kind==='ability')renderer?.event(event);
     if(event.text)view.toastMessage(event.text);
   }
   const now=performance.now();
   if(state.run.room!==oldRoom){if(oldRoom>=0)recordAutosave();}
   if(result.critical||state.run.player.hp!==oldHp||now>nextSave){nextSave=now+1000;recordAutosave();}
+  if(state.run.rogue?.offers.length){clearInputs();audio.setMode('silent');}
   if(result.dead){paused=true;audio.setMode('silent');finaliseRun(false);}
   view.refresh();
 }

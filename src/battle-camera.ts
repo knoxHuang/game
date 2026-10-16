@@ -1,7 +1,7 @@
 import type { Vec } from './model.ts';
 
 export function battleCamera(width:number,height:number,player:Vec,arena:{width:number;height:number},hasBoss:boolean) {
-  const top=hasBoss?104:64,fieldHeight=Math.max(12,height-top-160),tile=Math.max(12,Math.floor(width/12));
+  const top=hasBoss?124:84,fieldHeight=Math.max(12,height-top-160),tile=Math.max(12,Math.floor(width/12));
   const clamp=(desired:number,visible:number,world:number,origin:number)=>world<=visible?origin+(visible-world)/2:Math.max(origin+visible-world,Math.min(origin,desired));
   const ox=clamp(width/2-(player.x-.5)*tile,width,arena.width*tile,0);
   const oy=clamp(top+fieldHeight*.56-(player.y-.5)*tile,fieldHeight,arena.height*tile,top);

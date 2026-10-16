@@ -6,7 +6,7 @@ import { emptyRoom } from '../src/battle.ts';
 import { tick, emptyInput } from '../src/engine.ts';
 
 test('旧存档中一级调查所抵达 Boss 区后，不会出现区域清理但没有 Boss 的死局',()=>{
-  const state=freshState();acceptQuest(state,'K0');startRun(state);
+  const state=freshState('legacy');acceptQuest(state,'K0');startRun(state);
   const run=state.run!;
   run.rooms=Array.from({length:7},(_,i)=>emptyRoom(i));
   Reflect.deleteProperty(run,'battle');Reflect.deleteProperty(run,'world');

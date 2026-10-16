@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { dungeonSchema } from '../src/content/schema.ts';
 import { DUNGEONS, DUNGEONS_BY_ID, dungeon } from '../src/content/registry.ts';
+import { worldRegion } from '../src/content/world-map.ts';
 import { spriteFrame } from '../src/content/visuals.ts';
 import { freshState, acceptQuest, finishRun } from '../src/model.ts';
 import { startRun } from '../src/maps.ts';
@@ -14,19 +15,22 @@ import { parseSave, validState } from '../src/storage.ts';
 import { checkContent } from '../scripts/content-check.ts';
 
 export function investigation(id='tide_colossus') {
-  const state=freshState();state.shop=2;state.tutorialDone=true;state.selectedBoss=id;
-  assert.equal(acceptQuest(state,'K1'),null);assert.equal(startRun(state),null);return state;
+  const state=freshState('legacy');state.shop=2;state.tutorialDone=true;state.selectedBoss=id;state.bossReports=DUNGEONS.map(d=>d.id);
+  // Engine fixtures exercise unfinished packs independently from the real departure gate.
+  const pack=dungeon(id),status=pack.status,region=worldRegion(pack.map.region)!,charted=region.charted;
+  try { pack.status='ready';Object.assign(region,{charted:true});assert.equal(acceptQuest(state,'K1'),null);assert.equal(startRun(state),null);return state; }
+  finally { pack.status=status;Object.assign(region,{charted}); }
 }
 export function bossRun(id='tide_colossus') {
   const state=investigation(id),run=state.run!;run.time=dungeon(id).combat.waves[4].at;run.battle!.wave=4;run.battle!.batches=dungeon(id).combat.waves.map((w,i)=>i<4?w.batches:0);
   updateBattle(run,0);updateBattle(run,1);return state;
 }
 test('v3 存档与五波调查可正确往返保存',()=>{
-  assert.ok(validState(freshState()));
+  assert.ok(validState(freshState('legacy')));
   for(const d of DUNGEONS){const state=bossRun(d.id);assert.equal(aliveEnemies(state.run!)[0].hp,d.boss.hp);assert.deepEqual(parseSave(JSON.stringify(state)),state);}
 });
 test('教学调查使用默认主题，同样有五波与 Boss',()=>{
-  const s=freshState();s.selectedBoss='cthulhu_avatar';acceptQuest(s,'K0');startRun(s);const r=s.run!;
+  const s=freshState('legacy');s.selectedBoss='cthulhu_avatar';acceptQuest(s,'K0');startRun(s);const r=s.run!;
   assert.equal(r.boss,'tide_colossus');r.time=105;r.battle!.wave=4;r.battle!.batches=dungeon(r.boss).combat.waves.map((w,i)=>i<4?w.batches:0);updateBattle(r,0);updateBattle(r,1);
   assert.ok(aliveEnemies(r).some(e=>e.kind==='guardian'));
 });
@@ -64,8 +68,10 @@ test('动作图集攻击停在末帧，移动循环',()=>{
 test('自动发现第四包，拒绝缺图、重叠标记与断路',async()=>{
   const dir=await mkdtemp(join(tmpdir(),'fog-content-'));try{
     for(const d of DUNGEONS)await copyFile(`src/content/dungeons/${d.id}.json`,join(dir,`${d.id}.json`));
-    const pack=structuredClone(DUNGEONS[0]);pack.id='test_fourth_pack';pack.map={x:24,y:78,order:4};const file=join(dir,`${pack.id}.json`);await writeFile(file,JSON.stringify(pack));assert.equal((await checkContent(dir)).packs.length,4);assert.deepEqual((await checkContent(dir)).errors,[]);
-    pack.map={x:50,y:20,order:4};await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('过近')));pack.map={x:24,y:78,order:4};
+    const pack=structuredClone(DUNGEONS[0]);pack.id='test_fourth_pack';pack.map={...pack.map,x:28,y:86,order:4};const file=join(dir,`${pack.id}.json`);await writeFile(file,JSON.stringify(pack));assert.equal((await checkContent(dir)).packs.length,4);assert.deepEqual((await checkContent(dir)).errors,[]);
+    pack.map.requires=['missing_boss'];await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('未知前置报告')));
+    pack.map.requires=[pack.id];await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('循环')));pack.map.requires=[];
+    pack.map={...pack.map,x:54,y:17,order:4};await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('过近')));pack.map={...pack.map,x:28,y:86,order:4};
     pack.art.portrait='/assets/dungeons/missing.png';await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('missing.png')));pack.art.portrait=DUNGEONS[0].art.portrait;
     pack.arena.obstacles=Array.from({length:17},(_,i)=>({x:i+2,y:9}));await writeFile(file,JSON.stringify(pack));assert.ok((await checkContent(dir)).errors.some(e=>e.includes('隔断')));
   }finally{await rm(dir,{recursive:true,force:true});}
